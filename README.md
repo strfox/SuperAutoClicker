@@ -1,3 +1,4 @@
+![](https://i.imgur.com/KvqVlJL.png)
 # SuperAutoClicker
 
 **SuperAutoClicker** is a free, open-source auto clicker that can be controlled on-the-fly by using the Numpad buttons. You can set the interval, toggle it on and off and switch between mouse buttons without ever leaving your game.
