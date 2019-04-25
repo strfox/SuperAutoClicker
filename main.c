@@ -1,7 +1,6 @@
 #include <windows.h>
 #include <assert.h>
 #include <stdio.h>
-#include <wchar.h>
 #include <tchar.h>
 
 #include "beep.h"
