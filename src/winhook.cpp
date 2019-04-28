@@ -1,5 +1,8 @@
 #include "hook.h"
 
+#include <QString>
+#include <QTextStream>
+
 #include <windows.h>
 #include <assert.h>
 #include <stdio.h>
@@ -13,14 +16,14 @@
 namespace Hook {
 
 
-typedef ::bimap<actionkey_t, DWORD> _keymap_t;
+typedef ::bimap<action_t, keycomb_t> _keymap_t;
 
 
 _keymap_t _defaultKeyMap() {
     _keymap_t map;
-    map.put(TOGGLE_CLICK, VK_ADD);
-    map.put(TOGGLE_LISTEN, VK_SUBTRACT);
-    map.put(TOGGLE_MOUSE, VK_DIVIDE);
+    map.put(TOGGLE_CLICK, {VK_ADD, false, false, true, false});
+    map.put(TOGGLE_LISTEN, {VK_SUBTRACT, false, true, false, false});
+    map.put(TOGGLE_MOUSE, {VK_DIVIDE, true, false, false, false});
     return map;
 }
 
@@ -48,14 +51,12 @@ int releaseHook() {
 }
 
 
-void setBind(actionkey_t actionkey, unsigned long keyCode) {
+void setBind(action_t actionkey, keycomb_t keycomb) {
     assert(_keyMap.count(actionkey) == 1);
-    if (_keyMap.count(keyCode) > 0) {
-        QString err("keycode %1 already bound");
-        err = err.arg(QString::number(keyCode));
-        throw std::invalid_argument(err.toStdString());
+    if (_keyMap.count(keycomb) > 0) {
+        throw std::invalid_argument("already bound");
     }
-    _keyMap.put(actionkey, keyCode);
+    _keyMap.put(actionkey, keycomb);
 }
 
 
@@ -71,6 +72,47 @@ QString getLastError() {
 
     return QString(buf);
 }
+
+
+keycomb_t getKeyCombinationFor(action_t action) {
+    auto map = _keyMap.getMap();
+    qDebug("getKeyCombinationFor(%d)", action);
+    auto it = map.find(action);
+    if (it == map.end()) {
+        throw std::runtime_error(std::string("Action ") + actionnames[action] +  " not found in actionKey<->vkCode map");
+    }
+    return it->second;
+}
+
+
+QString getStringNameFor(keycomb_t keycomb) {
+    const int sizeBuf = 32;
+    wchar_t szBuf[sizeBuf];
+    BYTE barrKeyState[256] = {0};
+    int retcode = ToUnicodeEx(keycomb.vkCode, 0, barrKeyState, szBuf, _countof(szBuf), 0, nullptr);
+    if (retcode == 0) {
+        return QString("unknown");
+    } else {
+        QString key = QString::fromWCharArray(szBuf, sizeBuf);
+        QString fullname;
+        QTextStream out(&fullname);
+        if (keycomb.meta) {
+            out << "META ";
+        }
+        if (keycomb.ctrl) {
+            out << "CTRL ";
+        }
+        if (keycomb.alt) {
+            out << "ALT ";
+        }
+        if (keycomb.shift) {
+            out << "SHIFT ";
+        }
+        out << key;
+        return fullname;
+    }
+}
+
 
 LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     static KBDLLHOOKSTRUCT kbdStruct;
@@ -93,9 +135,9 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
             mainWindow->putDebugMsg(QString("Key pressed: %1").arg(QString::number(vkCode)));
 
             const auto vkActionMap = _keyMap.getInverted();
-            auto it = vkActionMap.find(vkCode);
+            auto it = vkActionMap.find({vkCode, false, false, false, false});
             if (it != vkActionMap.end()) {
-                const actionkey_t action = it->second;
+                const action_t action = it->second;
                 switch (action) {
                 case TOGGLE_CLICK:
                     mainWindow->putDebugMsg("Toggle click");

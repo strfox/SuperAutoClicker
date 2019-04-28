@@ -1,8 +1,8 @@
+#include "hook.h"
+
 #include "mainwindow.h"
 #include <QApplication>
 #include <QMessageBox>
-
-#include "hook.h"
 
 #ifdef SAC_WINDOWS
 #include <windows.h>
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 }
 
 #ifdef SAC_WINDOWS
-void doMessageLoop(void* _) {
+void doMessageLoop(void*) {
     MSG msg;
     while (GetMessage(&msg, nullptr, 0, 0) != FALSE) {
         TranslateMessage(&msg);
