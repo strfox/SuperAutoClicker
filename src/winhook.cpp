@@ -1,34 +1,24 @@
 #include "hook.h"
 
-#include <QString>
-#include <QTextStream>
-
 #include <windows.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdbool.h>
 
-#include "bimap.h"
+#include <QTextStream>
+
 #include "mainwindow.h"
 
 // Assume there are at most 0xFF keys
 #define VK_LEN 0xFF
 
-namespace Hook {
+static keycomb_t bindings[3] = {
+    { VK_ADD,      false, false, false, false }, // TOGGLE_CLICK
+    { VK_SUBTRACT, true, true, true, true     }, // TOGGLE_LISTEN
+    { VK_DIVIDE,   false, false, true, false  }  // TOGGLE_MOUSE
+};
 
 
-typedef ::bimap<action_t, keycomb_t> _keymap_t;
-
-
-_keymap_t _defaultKeyMap() {
-    _keymap_t map;
-    map.put(TOGGLE_CLICK, {VK_ADD, false, false, true, false});
-    map.put(TOGGLE_LISTEN, {VK_SUBTRACT, false, true, false, false});
-    map.put(TOGGLE_MOUSE, {VK_DIVIDE, true, false, false, false});
-    return map;
-}
-
-
-static _keymap_t _keyMap = _defaultKeyMap();
 static HHOOK _hook;
 
 
@@ -41,7 +31,7 @@ int hookExists() {
 
 
 int createHook() {
-    _hook = SetWindowsHookEx(WH_KEYBOARD_LL, _hookProc, nullptr, 0);
+    _hook = SetWindowsHookEx(WH_KEYBOARD_LL, _hookProc, NULL, 0);
     return hookExists();
 }
 
@@ -52,65 +42,58 @@ int releaseHook() {
 
 
 void setBind(action_t actionkey, keycomb_t keycomb) {
-    assert(_keyMap.count(actionkey) == 1);
-    if (_keyMap.count(keycomb) > 0) {
-        throw std::invalid_argument("already bound");
-    }
-    _keyMap.put(actionkey, keycomb);
+    bindings[actionkey] = keycomb;
 }
 
 
 QString getLastError() {
     DWORD err = GetLastError();
     if (err == 0) {
-        return QString();
+        return NULL;
     }
-
-    LPSTR buf;
+    wchar_t* buf;
     FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                   nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &buf, 0, nullptr);
-
-    return QString(buf);
+                   NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &buf, 0, NULL);
+    QString str = QString::fromWCharArray(buf);
+    LocalFree(buf);
+    return str;
 }
 
 
 keycomb_t getKeyCombinationFor(action_t action) {
-    auto map = _keyMap.getMap();
-    qDebug("getKeyCombinationFor(%d)", action);
-    auto it = map.find(action);
-    if (it == map.end()) {
-        throw std::runtime_error(std::string("Action ") + actionnames[action] +  " not found in actionKey<->vkCode map");
-    }
-    return it->second;
+    return bindings[action];
 }
 
 
 QString getStringNameFor(keycomb_t keycomb) {
-    const int sizeBuf = 32;
-    wchar_t szBuf[sizeBuf];
     BYTE barrKeyState[256] = {0};
-    int retcode = ToUnicodeEx(keycomb.vkCode, 0, barrKeyState, szBuf, _countof(szBuf), 0, nullptr);
+
+    wchar_t szwKeyName[10];
+    int retcode = ToUnicodeEx(keycomb.vkCode, 0, barrKeyState, szwKeyName, _countof(szwKeyName), 0, NULL);
+    const QString strKeyName = QString::fromWCharArray(szwKeyName);
+
+    QString strFullName;
+    QTextStream stream(&strFullName);
+
     if (retcode == 0) {
-        return QString("unknown");
+        stream << "Unknown";
     } else {
-        QString key = QString::fromWCharArray(szBuf, sizeBuf);
-        QString fullname;
-        QTextStream out(&fullname);
         if (keycomb.meta) {
-            out << "META ";
+            stream << "META ";
         }
         if (keycomb.ctrl) {
-            out << "CTRL ";
+            stream << "CTRL ";
         }
         if (keycomb.alt) {
-            out << "ALT ";
+            stream << "ALT ";
         }
         if (keycomb.shift) {
-            out << "SHIFT ";
+            stream << "SHIFT";
         }
-        out << key;
-        return fullname;
+        stream << strKeyName;
     }
+
+    return strFullName;
 }
 
 
@@ -131,24 +114,16 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
             // Mark key as down
             keysDown[vkCode] = TRUE;
 
-            assert(mainWindow != nullptr);
-            mainWindow->putDebugMsg(QString("Key pressed: %1").arg(QString::number(vkCode)));
+            QString name = getStringNameFor({vkCode, false, false, false, false});
+            assert(mainWindow != NULL);
+            mainWindow->putDebugMsg(QString("Key pressed: %1").arg(name));
 
-            const auto vkActionMap = _keyMap.getInverted();
-            auto it = vkActionMap.find({vkCode, false, false, false, false});
-            if (it != vkActionMap.end()) {
-                const action_t action = it->second;
-                switch (action) {
-                case TOGGLE_CLICK:
-                    mainWindow->putDebugMsg("Toggle click");
-                    break;
-                case TOGGLE_MOUSE:
-                    mainWindow->putDebugMsg("Toggle mouse");
-                    break;
-                case TOGGLE_LISTEN:
-                    mainWindow->putDebugMsg("Toggle listen");
-                    break;
-                }
+            if (vkCode == bindings[TOGGLE_LISTEN].vkCode) {
+                mainWindow->putDebugMsg(QString("Toggle mouse"));
+            } else if (vkCode == bindings[TOGGLE_CLICK].vkCode) {
+                mainWindow->putDebugMsg(QString("Toggle click"));
+            } else if (vkCode == bindings[TOGGLE_MOUSE].vkCode) {
+                mainWindow->putDebugMsg(QString("Toggle mouse"));
             }
         } else if (wParam == WM_KEYUP) {
             // Mark key as up
@@ -157,6 +132,4 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     }
 
     return CallNextHookEx(_hook, nCode, wParam, lParam);
-}
-
 }

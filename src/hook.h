@@ -1,43 +1,32 @@
 #ifndef SAC_HOOK_H
 #define SAC_HOOK_H
 
+#include <stdbool.h>
+#include <stdio.h>
+
 #include <QString>
 
-namespace Hook {
-
-
-typedef unsigned int action_t;
-const action_t
+typedef enum action_t {
     TOGGLE_CLICK = 1,
     TOGGLE_LISTEN = 2,
-    TOGGLE_MOUSE = 3;
+    TOGGLE_MOUSE = 3
+} action_t;
 
 
-static std::string actionnames[] = {
+static char* actionnames[] = {
     "TOGGLE_CLICK",
     "TOGGLE_LISTEN",
     "TOGGLE_MOUSE"
 };
 
+typedef unsigned long VKCODE;
 
 typedef struct keycomb_t {
-    unsigned long vkCode;
+    VKCODE vkCode;
     bool ctrl;
     bool shift;
     bool alt;
     bool meta;
-
-    bool operator==(const keycomb_t &o) const {
-        return vkCode == o.vkCode && ctrl == o.ctrl && shift == o.shift && alt == o.alt && meta == o.meta;
-    }
-
-    bool operator<(const keycomb_t &o) const {
-        return     (!meta && o.meta)
-                || (!alt && o.alt)
-                || (!shift && o.shift)
-                || (!ctrl && o.ctrl)
-                || (vkCode < o.vkCode);
-    }
 } keycomb_t;
 
 
@@ -56,9 +45,7 @@ QString getLastError();
 keycomb_t getKeyCombinationFor(action_t action);
 
 
-QString getStringNameFor(keycomb_t);
+QString getStringNameFor(keycomb_t keycomb);
 
-
-}
 
 #endif // SAC_HOOK_H

@@ -3,6 +3,8 @@
 
 #include "hook.h"
 
+#include <QDebug>
+
 MainWindow* mainWindow;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -11,13 +13,14 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    Hook::keycomb_t keycombListen = Hook::getKeyCombinationFor(Hook::TOGGLE_LISTEN);
-    Hook::keycomb_t keycombMouse = Hook::getKeyCombinationFor(Hook::TOGGLE_MOUSE);
-    Hook::keycomb_t keycombClick = Hook::getKeyCombinationFor(Hook::TOGGLE_CLICK);
+    keycomb_t keycombListen = getKeyCombinationFor(TOGGLE_LISTEN);
+    keycomb_t keycombMouse = getKeyCombinationFor(TOGGLE_MOUSE);
+    keycomb_t keycombClick = getKeyCombinationFor(TOGGLE_CLICK);
 
-    ui->listenBindButton->setText(Hook::getStringNameFor(keycombListen));
-    ui->mouseBindButton->setText(Hook::getStringNameFor(keycombMouse));
-    ui->clickBindButton->setText(Hook::getStringNameFor(keycombClick));
+    ui->listenBindButton->setText(getStringNameFor(keycombListen));
+    ui->clickBindButton->setText(getStringNameFor(keycombClick));
+    ui->mouseBindButton->setText(getStringNameFor(keycombMouse));
+
 }
 
 MainWindow::~MainWindow()

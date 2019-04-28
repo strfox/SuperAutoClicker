@@ -22,10 +22,12 @@ int main(int argc, char *argv[])
     bool errors = false;
     bool hooked = false;
 
-    hooked = Hook::createHook();
+    hooked = createHook();
     if (!hooked) {
         QMessageBox msgBox;
-        msgBox.critical(nullptr, "Error", QString("Could not hook to system! Error: ").append(Hook::getLastError()));
+
+        QString err = getLastError();
+        msgBox.critical(nullptr, "Error", QString("Could not hook to system! Error: ").append(err));
         msgBox.setFixedSize(500, 200);
         errors = true;
     }
@@ -54,7 +56,7 @@ int main(int argc, char *argv[])
     }
 
     if (hooked) {
-        Hook::releaseHook();
+        releaseHook();
     }
 
 #ifdef SAC_WINDOWS

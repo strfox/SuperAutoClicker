@@ -1,5 +1,7 @@
 QT       += core gui
 
+QMAKE_CXXFLAGS_WARN_OFF -= -Wwritable-strings
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET   = sac
@@ -19,6 +21,8 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui
+
+INCLUDEPATH += $$PWD/../include
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
