@@ -1,7 +1,5 @@
 QT       += core gui
 
-QMAKE_CXXFLAGS_WARN_OFF -= -Wwritable-strings
-
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET   = sac
@@ -15,7 +13,6 @@ SOURCES += \
         winhook.cpp
 
 HEADERS += \
-        bimap.h \
         hook.h \
         mainwindow.h
 

@@ -12,10 +12,11 @@
 // Assume there are at most 0xFF keys
 #define VK_LEN 0xFF
 
-static keycomb_t bindings[3] = {
+static keycomb_t bindings[4] = {
     { VK_ADD,      false, false, false, false }, // TOGGLE_CLICK
-    { VK_SUBTRACT, true, true, true, true     }, // TOGGLE_LISTEN
-    { VK_DIVIDE,   false, false, true, false  }  // TOGGLE_MOUSE
+    { VK_SUBTRACT, false, false, false, false }, // TOGGLE_LISTEN
+    { VK_DIVIDE,   false, false, false, false }, // TOGGLE_MOUSE
+    { VK_MULTIPLY, false, false, false, false }  // TOGGLE_HOLD
 };
 
 
@@ -31,7 +32,7 @@ int hookExists() {
 
 
 int createHook() {
-    _hook = SetWindowsHookEx(WH_KEYBOARD_LL, _hookProc, NULL, 0);
+    _hook = SetWindowsHookEx(WH_KEYBOARD_LL, _hookProc, nullptr, 0);
     return hookExists();
 }
 
@@ -48,15 +49,17 @@ void setBind(action_t actionkey, keycomb_t keycomb) {
 
 QString getLastError() {
     DWORD err = GetLastError();
-    if (err == 0) {
-        return NULL;
+    if (err == 0) { return nullptr; }
+    else {
+        wchar_t* buf;
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER
+                            | FORMAT_MESSAGE_FROM_SYSTEM
+                            | FORMAT_MESSAGE_IGNORE_INSERTS,
+                       nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &buf, 0, nullptr);
+        QString str = QString::fromWCharArray(buf);
+        LocalFree(buf);
+        return str;
     }
-    wchar_t* buf;
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                   NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &buf, 0, NULL);
-    QString str = QString::fromWCharArray(buf);
-    LocalFree(buf);
-    return str;
 }
 
 
@@ -69,50 +72,45 @@ QString getStringNameFor(keycomb_t keycomb) {
     BYTE barrKeyState[256] = {0};
 
     wchar_t szwKeyName[10];
-    int retcode = ToUnicodeEx(keycomb.vkCode, 0, barrKeyState, szwKeyName, _countof(szwKeyName), 0, NULL);
-    const QString strKeyName = QString::fromWCharArray(szwKeyName);
+    int retcode = ToUnicodeEx(
+                keycomb.vkCode,         //       UINT    wVirtKey
+                0,                      //       UINT    wScanCode
+                barrKeyState,           // const BYTE   *lpKeyState
+                szwKeyName,             //       LPWSTR  pwszBuff
+                _countof(szwKeyName),   //       int     cchBuff
+                0,                      //       UINT    wFlags
+                nullptr                 //       HKL     dwhkl
+              );
 
+    const QString strKeyName = QString::fromWCharArray(szwKeyName);
     QString strFullName;
     QTextStream stream(&strFullName);
 
     if (retcode == 0) {
         stream << "Unknown";
     } else {
-        if (keycomb.meta) {
-            stream << "META ";
-        }
-        if (keycomb.ctrl) {
-            stream << "CTRL ";
-        }
-        if (keycomb.alt) {
-            stream << "ALT ";
-        }
-        if (keycomb.shift) {
-            stream << "SHIFT";
-        }
+        if (keycomb.meta)  { stream << "META "; }
+        if (keycomb.ctrl)  { stream << "CTRL "; }
+        if (keycomb.alt)   { stream << "ALT ";  }
+        if (keycomb.shift) { stream << "SHIFT"; }
         stream << strKeyName;
     }
-
     return strFullName;
 }
 
 
 LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     static KBDLLHOOKSTRUCT kbdStruct;
-    kbdStruct = *((KBDLLHOOKSTRUCT *) lParam);
+    static BOOL keysDown[VK_LEN]; // Used to store the press-state of virtual keys.
 
-    /**
-     * @brief keysDown: Used to store the press-state of virtual keys.
-     */
-    static BOOL keysDown[VK_LEN];
+    kbdStruct = *((KBDLLHOOKSTRUCT *) lParam);
 
     const DWORD vkCode = kbdStruct.vkCode;
     assert(vkCode < VK_LEN);
 
     if (nCode >= 0) {
         if (wParam == WM_KEYDOWN && !keysDown[vkCode]) {
-            // Mark key as down
-            keysDown[vkCode] = TRUE;
+            keysDown[vkCode] = TRUE; // Mark key as down
 
             QString name = getStringNameFor({vkCode, false, false, false, false});
             assert(mainWindow != NULL);
@@ -124,10 +122,11 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 mainWindow->putDebugMsg(QString("Toggle click"));
             } else if (vkCode == bindings[TOGGLE_MOUSE].vkCode) {
                 mainWindow->putDebugMsg(QString("Toggle mouse"));
+            } else if (vkCode == bindings[TOGGLE_HOLD].vkCode) {
+                mainWindow->putDebugMsg(QString("Toggle hold"));
             }
         } else if (wParam == WM_KEYUP) {
-            // Mark key as up
-            keysDown[vkCode] = FALSE;
+            keysDown[vkCode] = FALSE; // Mark key as up
         }
     }
 

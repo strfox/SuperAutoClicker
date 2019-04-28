@@ -7,16 +7,18 @@
 #include <QString>
 
 typedef enum action_t {
-    TOGGLE_CLICK = 1,
-    TOGGLE_LISTEN = 2,
-    TOGGLE_MOUSE = 3
+    TOGGLE_CLICK,
+    TOGGLE_LISTEN,
+    TOGGLE_MOUSE,
+    TOGGLE_HOLD
 } action_t;
 
 
-static char* actionnames[] = {
+static std::string actionnames[] = {
     "TOGGLE_CLICK",
     "TOGGLE_LISTEN",
-    "TOGGLE_MOUSE"
+    "TOGGLE_MOUSE",
+    "TOGGLE_HOLD"
 };
 
 typedef unsigned long VKCODE;
