@@ -18,7 +18,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void putMessage(QString msg);
+    void putMsg(QString msg);
+    void putDebugMsg(QString msg);
 
 private:
     Ui::MainWindow *ui;

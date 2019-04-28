@@ -3,8 +3,8 @@
 #include <windows.h>
 #include <assert.h>
 #include <stdio.h>
-#include <map>
 
+#include "bimap.h"
 #include "mainwindow.h"
 
 // Assume there are at most 0xFF keys
@@ -13,19 +13,19 @@
 namespace Hook {
 
 
-typedef std::map<actionkey_t, DWORD> _keymap_t;
+typedef ::bimap<actionkey_t, DWORD> _keymap_t;
 
 
 _keymap_t _defaultKeyMap() {
     _keymap_t map;
-    map[TOGGLE_CLICK] = VK_ADD;
-    map[TOGGLE_LISTEN] = VK_SUBTRACT;
-    map[TOGGLE_MOUSE] = VK_DIVIDE;
+    map.put(TOGGLE_CLICK, VK_ADD);
+    map.put(TOGGLE_LISTEN, VK_SUBTRACT);
+    map.put(TOGGLE_MOUSE, VK_DIVIDE);
     return map;
 }
 
 
-static _keymap_t _keyMap;
+static _keymap_t _keyMap = _defaultKeyMap();
 static HHOOK _hook;
 
 
@@ -50,7 +50,12 @@ int releaseHook() {
 
 void setBind(actionkey_t actionkey, unsigned long keyCode) {
     assert(_keyMap.count(actionkey) == 1);
-    _keyMap[actionkey] = keyCode;
+    if (_keyMap.count(keyCode) > 0) {
+        QString err("keycode %1 already bound");
+        err = err.arg(QString::number(keyCode));
+        throw std::invalid_argument(err.toStdString());
+    }
+    _keyMap.put(actionkey, keyCode);
 }
 
 
@@ -67,7 +72,6 @@ QString getLastError() {
     return QString(buf);
 }
 
-
 LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     static KBDLLHOOKSTRUCT kbdStruct;
     kbdStruct = *((KBDLLHOOKSTRUCT *) lParam);
@@ -77,7 +81,7 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
      */
     static BOOL keysDown[VK_LEN];
 
-    DWORD vkCode = kbdStruct.vkCode;
+    const DWORD vkCode = kbdStruct.vkCode;
     assert(vkCode < VK_LEN);
 
     if (nCode >= 0) {
@@ -85,15 +89,25 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
             // Mark key as down
             keysDown[vkCode] = TRUE;
 
-            assert(mainWindow != NULL);
+            assert(mainWindow != nullptr);
+            mainWindow->putDebugMsg(QString("Key pressed: %1").arg(QString::number(vkCode)));
 
-#ifdef QT_DEBUG
-            QString msg = QString("Key pressed: %1\n").arg(QString::number(vkCode));
-            mainWindow->putMessage(msg);
-#endif
-
-            // TODO
-
+            const auto vkActionMap = _keyMap.getInverted();
+            auto it = vkActionMap.find(vkCode);
+            if (it != vkActionMap.end()) {
+                const actionkey_t action = it->second;
+                switch (action) {
+                case TOGGLE_CLICK:
+                    mainWindow->putDebugMsg("Toggle click");
+                    break;
+                case TOGGLE_MOUSE:
+                    mainWindow->putDebugMsg("Toggle mouse");
+                    break;
+                case TOGGLE_LISTEN:
+                    mainWindow->putDebugMsg("Toggle listen");
+                    break;
+                }
+            }
         } else if (wParam == WM_KEYUP) {
             // Mark key as up
             keysDown[vkCode] = FALSE;

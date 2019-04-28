@@ -16,6 +16,13 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::putMessage(QString msg) {
+void MainWindow::putMsg(QString msg) {
     ui->messages->append(msg);
+}
+
+
+void MainWindow::putDebugMsg(QString msg) {
+#ifdef QT_DEBUG
+    putMsg(msg);
+#endif
 }
