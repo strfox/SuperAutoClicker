@@ -76,3 +76,8 @@ void sac::MainWindow::on_actionAbout_triggered()
 }
 
 } //namespace sac
+
+void sac::MainWindow::on_actionQuit_triggered()
+{
+    QApplication::quit();
+}
