@@ -629,39 +629,16 @@ QString getStringNameFor(keycomb_t keycomb) {
         break;
     }
 
-    return keyname;
+    QString strComb;
+    QTextStream s(&strComb);
 
-    /*
-     * TODO: Remove this
-     *
-    BYTE barrKeyState[256] = {0};
+    if (keycomb.meta ) s <<   "WIN ";
+    if (keycomb.ctrl ) s <<  "CTRL ";
+    if (keycomb.alt  ) s <<   "ALT ";
+    if (keycomb.shift) s << "SHIFT ";
 
-    wchar_t szwKeyName[10];
-    int retcode = ToUnicodeEx(
-                keycomb.vkCode,         //       UINT    wVirtKey
-                0,                      //       UINT    wScanCode
-                barrKeyState,           // const BYTE   *lpKeyState
-                szwKeyName,             //       LPWSTR  pwszBuff
-                _countof(szwKeyName),   //       int     cchBuff
-                0,                      //       UINT    wFlags
-                nullptr                 //       HKL     dwhkl
-              );
-
-    const QString strKeyName = QString::fromWCharArray(szwKeyName);
-    QString strFullName;
-    QTextStream stream(&strFullName);
-
-    if (retcode == 0) {
-        stream << "Unknown";
-    } else {
-        if (keycomb.meta)  { stream << "META "; }
-        if (keycomb.ctrl)  { stream << "CTRL "; }
-        if (keycomb.alt)   { stream << "ALT ";  }
-        if (keycomb.shift) { stream << "SHIFT"; }
-        stream << strKeyName;
-    }
-    return strFullName;
-    */
+    s << keyname;
+    return strComb;
 }
 
 

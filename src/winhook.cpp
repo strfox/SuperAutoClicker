@@ -18,7 +18,7 @@ namespace hook {
 
 static kb::keycomb_t bindings[4] = {
     { VK_ADD,      false, false, false, false }, // TOGGLE_CLICK
-    { VK_SUBTRACT, false, false, false, false }, // TOGGLE_LISTEN
+    { VK_SUBTRACT, false, false, false, true  }, // TOGGLE_LISTEN
     { VK_DIVIDE,   false, false, false, false }, // TOGGLE_MOUSE
     { VK_MULTIPLY, false, false, false, false }  // TOGGLE_HOLD
 };
