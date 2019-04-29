@@ -5,6 +5,7 @@
 #include "autoclicker.h"
 
 #include <QDebug>
+#include <QMessageBox>
 
 namespace sac {
 
@@ -55,6 +56,23 @@ void MainWindow::refreshUiInfo() {
     ui->mouseButtonStatusLabel   ->setText(autoClicker->m_mouseButton    ? "MOUSE2" : "MOUSE1");
     ui->clickModeStatusLabel     ->setText(autoClicker->m_clickMode      ? "ON"     : "OFF"   );
     ui->holdButtonModeStatusLabel->setText(autoClicker->m_holdButtonMode ? "ON"     : "OFF"   );
+}
+
+void sac::MainWindow::on_actionAbout_triggered()
+{
+    static QString msg;
+    if (msg.isEmpty()) {
+        QTextStream s(&msg);
+        s << PROGRAM_NAME
+          << " version " << PROGRAM_VERSION
+          << " by " << PROGRAM_AUTHOR
+          << ". GitHub: " << PROGRAM_REPO;
+    }
+
+    QMessageBox msgbox;
+    msgbox.setWindowTitle("About");
+    msgbox.setText(msg);
+    msgbox.exec();
 }
 
 } //namespace sac
