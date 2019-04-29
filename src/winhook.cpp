@@ -4,13 +4,17 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
-
 #include <QTextStream>
 
 #include "mainwindow.h"
+#include "autoclicker.h"
 
 // Assume there are at most 0xFF keys
 #define VK_LEN 0xFF
+
+namespace sac {
+namespace hook {
+
 
 static keycomb_t bindings[4] = {
     { VK_ADD,      false, false, false, false }, // TOGGLE_CLICK
@@ -113,17 +117,23 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
             keysDown[vkCode] = TRUE; // Mark key as down
 
             QString name = getStringNameFor({vkCode, false, false, false, false});
-            assert(mainWindow != NULL);
-            mainWindow->putDebugMsg(QString("Key pressed: %1").arg(name));
+            qDebug("Key pressed: " + name.toUtf8());
 
             if (vkCode == bindings[TOGGLE_LISTEN].vkCode) {
-                mainWindow->putDebugMsg(QString("Toggle mouse"));
-            } else if (vkCode == bindings[TOGGLE_CLICK].vkCode) {
-                mainWindow->putDebugMsg(QString("Toggle click"));
-            } else if (vkCode == bindings[TOGGLE_MOUSE].vkCode) {
-                mainWindow->putDebugMsg(QString("Toggle mouse"));
-            } else if (vkCode == bindings[TOGGLE_HOLD].vkCode) {
-                mainWindow->putDebugMsg(QString("Toggle hold"));
+                qDebug("Toggle listen");
+                sac::toggleListenMode();
+            }
+            else if (vkCode == bindings[TOGGLE_CLICK].vkCode) {
+                qDebug("Toggle click");
+                sac::toggleClickMode();
+            }
+            else if (vkCode == bindings[TOGGLE_MOUSE].vkCode) {
+                qDebug("Toggle mouse");
+                sac::toggleMouseButton();
+            }
+            else if (vkCode == bindings[TOGGLE_HOLD].vkCode) {
+                qDebug("Toggle hold");
+                sac::toggleHoldButtonMode();
             }
         } else if (wParam == WM_KEYUP) {
             keysDown[vkCode] = FALSE; // Mark key as up
@@ -132,3 +142,6 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
     return CallNextHookEx(_hook, nCode, wParam, lParam);
 }
+
+} // namespace hook
+} // namespace sac

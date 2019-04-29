@@ -6,6 +6,9 @@
 
 #include <QString>
 
+namespace sac {
+namespace hook {
+
 typedef enum action_t {
     TOGGLE_CLICK,
     TOGGLE_LISTEN,
@@ -49,5 +52,8 @@ keycomb_t getKeyCombinationFor(action_t action);
 
 QString getStringNameFor(keycomb_t keycomb);
 
+
+} // namespace hook
+} // namespace sac
 
 #endif // SAC_HOOK_H

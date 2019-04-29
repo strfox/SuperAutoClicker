@@ -22,11 +22,11 @@ int main(int argc, char *argv[])
     bool errors = false;
     bool hooked = false;
 
-    hooked = createHook();
+    hooked = sac::hook::createHook();
     if (!hooked) {
         QMessageBox msgBox;
 
-        QString err = getLastError();
+        QString err = sac::hook::getLastError();
         msgBox.critical(nullptr, "Error", QString("Could not hook to system! Error: ").append(err));
         msgBox.setFixedSize(500, 200);
         errors = true;
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     uintptr_t pThread = _beginthread(doMessageLoop, 0, nullptr);
     HANDLE hThread = (HANDLE) pThread;
 
-    bool windowsThread = pThread != -1ULL;
+    bool windowsThread = pThread != -1U;
     if (!windowsThread) {
         // Error while creating thread -- show message box displaying error
         QString msg("An error occurred! Code: ");
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     }
 
     if (hooked) {
-        releaseHook();
+        sac::hook::releaseHook();
     }
 
 #ifdef SAC_WINDOWS

@@ -23,6 +23,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+    void refreshUiButtons();
 };
 
 #endif // MAINWINDOW_H

@@ -8,11 +8,13 @@ TEMPLATE = app
 include(../sac.pri)
 
 SOURCES += \
+        autoclicker.cpp \
         main.cpp \
         mainwindow.cpp \
         winhook.cpp
 
 HEADERS += \
+        autoclicker.h \
         hook.h \
         mainwindow.h
 

@@ -12,15 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-    keycomb_t keycombListen = getKeyCombinationFor(TOGGLE_LISTEN);
-    keycomb_t keycombMouse = getKeyCombinationFor(TOGGLE_MOUSE);
-    keycomb_t keycombClick = getKeyCombinationFor(TOGGLE_CLICK);
-
-    ui->listenBindButton->setText(getStringNameFor(keycombListen));
-    ui->clickBindButton->setText(getStringNameFor(keycombClick));
-    ui->mouseBindButton->setText(getStringNameFor(keycombMouse));
-
+    refreshUiButtons();
 }
 
 MainWindow::~MainWindow()
@@ -38,4 +30,17 @@ void MainWindow::putDebugMsg(QString msg) {
 #ifdef QT_DEBUG
     putMsg(msg);
 #endif
+}
+
+
+void MainWindow::refreshUiButtons() {
+    sac::hook::keycomb_t keycombListen = getKeyCombinationFor(sac::hook::TOGGLE_LISTEN);
+    sac::hook::keycomb_t keycombMouse  = getKeyCombinationFor(sac::hook::TOGGLE_MOUSE);
+    sac::hook::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK);
+    sac::hook::keycomb_t keycombHold   = getKeyCombinationFor(sac::hook::TOGGLE_HOLD);
+
+    ui->listenBindButton     ->setText(getStringNameFor(keycombListen));
+    ui->clickBindButton      ->setText(getStringNameFor(keycombClick ));
+    ui->mouseBindButton      ->setText(getStringNameFor(keycombMouse ));
+    ui->holdButtonMouseButton->setText(getStringNameFor(keycombHold  ));
 }
