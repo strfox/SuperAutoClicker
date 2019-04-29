@@ -1,15 +1,34 @@
 #ifndef AUTOCLICKER_H
 #define AUTOCLICKER_H
 
+#include <QString>
+#include <QSettings>
+#include <QObject>
+
 namespace sac {
 
-void toggleListenMode();
+class AutoClicker;
 
-void toggleClickMode();
+extern AutoClicker* autoClicker;
 
-void toggleMouseButton();
+class AutoClicker: public QObject {
+    Q_OBJECT
 
-void toggleHoldButtonMode();
+public:
+    AutoClicker();
+    virtual ~AutoClicker();
+
+    void toggleListenMode();
+    void toggleClickMode();
+    void toggleMouseButton();
+    void toggleHoldButtonMode();
+
+private:
+    QString getConfigFilePath();
+
+    QSettings *m_config;
+
+}; // class AutoCLicker
 
 } // namespace sac
 

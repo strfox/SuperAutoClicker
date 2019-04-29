@@ -7,7 +7,10 @@ namespace Ui {
     class MainWindow;
 }
 
-class MainWindow;
+namespace sac {
+
+class MainWindow; //fwddecl
+
 extern MainWindow* mainWindow;
 
 class MainWindow : public QMainWindow
@@ -25,6 +28,8 @@ private:
     Ui::MainWindow *ui;
 
     void refreshUiButtons();
-};
+}; // class MainWindow
+
+} // namespace sac
 
 #endif // MAINWINDOW_H

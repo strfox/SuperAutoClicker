@@ -1,6 +1,8 @@
 #include "hook.h"
 
 #include "mainwindow.h"
+#include "autoclicker.h"
+
 #include <QApplication>
 #include <QMessageBox>
 
@@ -13,11 +15,12 @@ void doMessageLoop(void* _);
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QApplication qtApp(argc, argv);
+    sac::MainWindow mainWindow;
+    sac::AutoClicker autoClicker;
 
-    mainWindow = &w;
+    sac::mainWindow = &mainWindow;
+    sac::autoClicker = &autoClicker;
 
     bool errors = false;
     bool hooked = false;
@@ -52,7 +55,8 @@ int main(int argc, char *argv[])
     // Start program only if there were no errors during initialization
     int retval = 1;
     if (!errors) {
-        retval = a.exec();
+        mainWindow.show();
+        retval = qtApp.exec();
     }
 
     if (hooked) {

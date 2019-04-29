@@ -5,6 +5,8 @@
 
 #include <QDebug>
 
+namespace sac {
+
 MainWindow* mainWindow;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -15,8 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     refreshUiButtons();
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow(){
     delete ui;
 }
 
@@ -44,3 +45,5 @@ void MainWindow::refreshUiButtons() {
     ui->mouseBindButton      ->setText(getStringNameFor(keycombMouse ));
     ui->holdButtonMouseButton->setText(getStringNameFor(keycombHold  ));
 }
+
+} //namespace sac

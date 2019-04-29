@@ -56,10 +56,17 @@ QString getLastError() {
     if (err == 0) { return nullptr; }
     else {
         wchar_t* buf;
-        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER
-                            | FORMAT_MESSAGE_FROM_SYSTEM
-                            | FORMAT_MESSAGE_IGNORE_INSERTS,
-                       nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR) &buf, 0, nullptr);
+        FormatMessageA(
+                       FORMAT_MESSAGE_ALLOCATE_BUFFER             // DWORD    dFlags
+                            | FORMAT_MESSAGE_FROM_SYSTEM          //
+                            | FORMAT_MESSAGE_IGNORE_INSERTS,      //
+                       nullptr,                                   // LPCVOID  source
+                       err,                                       // DWORD    dwMessageId
+                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // DWORD    dwLanguageId
+                       (LPSTR) &buf,                              // LPSTR    lpBuffer
+                       0,                                         // DWORD    nSize
+                       nullptr                                    // va_list *Arguments
+                   );
         QString str = QString::fromWCharArray(buf);
         LocalFree(buf);
         return str;
@@ -117,23 +124,23 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
             keysDown[vkCode] = TRUE; // Mark key as down
 
             QString name = getStringNameFor({vkCode, false, false, false, false});
-            qDebug("Key pressed: " + name.toUtf8());
+            qDebug("Key pressed: %s", qUtf8Printable(name));
 
             if (vkCode == bindings[TOGGLE_LISTEN].vkCode) {
                 qDebug("Toggle listen");
-                sac::toggleListenMode();
+                sac::autoClicker->toggleListenMode();
             }
             else if (vkCode == bindings[TOGGLE_CLICK].vkCode) {
                 qDebug("Toggle click");
-                sac::toggleClickMode();
+                sac::autoClicker->toggleClickMode();
             }
             else if (vkCode == bindings[TOGGLE_MOUSE].vkCode) {
                 qDebug("Toggle mouse");
-                sac::toggleMouseButton();
+                sac::autoClicker->toggleMouseButton();
             }
             else if (vkCode == bindings[TOGGLE_HOLD].vkCode) {
                 qDebug("Toggle hold");
-                sac::toggleHoldButtonMode();
+                sac::autoClicker->toggleHoldButtonMode();
             }
         } else if (wParam == WM_KEYUP) {
             keysDown[vkCode] = FALSE; // Mark key as up
