@@ -23,9 +23,12 @@ public:
     void toggleMouseButton();
     void toggleHoldButtonMode();
 
+    bool m_listenMode     = false;
+    bool m_clickMode      = false;
+    bool m_mouseButton    = false;
+    bool m_holdButtonMode = false;
 private:
-    QString getConfigFilePath();
-
+    QString    getConfigFilePath();
     QSettings *m_config;
 
 }; // class AutoCLicker

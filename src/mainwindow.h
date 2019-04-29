@@ -28,6 +28,7 @@ private:
     Ui::MainWindow *ui;
 
     void refreshUiButtons();
+    void refreshUiInfo();
 }; // class MainWindow
 
 } // namespace sac

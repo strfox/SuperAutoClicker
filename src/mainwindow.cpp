@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "hook.h"
+#include "autoclicker.h"
 
 #include <QDebug>
 
@@ -15,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     refreshUiButtons();
+    refreshUiInfo();
 }
 
 MainWindow::~MainWindow(){
@@ -36,14 +38,23 @@ void MainWindow::putDebugMsg(QString msg) {
 
 void MainWindow::refreshUiButtons() {
     kb::keycomb_t keycombListen = getKeyCombinationFor(sac::hook::TOGGLE_LISTEN);
-    kb::keycomb_t keycombMouse  = getKeyCombinationFor(sac::hook::TOGGLE_MOUSE);
-    kb::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK);
-    kb::keycomb_t keycombHold   = getKeyCombinationFor(sac::hook::TOGGLE_HOLD);
+    kb::keycomb_t keycombMouse  = getKeyCombinationFor(sac::hook::TOGGLE_MOUSE );
+    kb::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK );
+    kb::keycomb_t keycombHold   = getKeyCombinationFor(sac::hook::TOGGLE_HOLD  );
 
     ui->listenBindButton     ->setText(getStringNameFor(keycombListen));
     ui->clickBindButton      ->setText(getStringNameFor(keycombClick ));
     ui->mouseBindButton      ->setText(getStringNameFor(keycombMouse ));
     ui->holdButtonMouseButton->setText(getStringNameFor(keycombHold  ));
+}
+
+void MainWindow::refreshUiInfo() {
+    assert(autoClicker != nullptr);
+
+    ui->listenModeStatusLabel    ->setText(autoClicker->m_listenMode     ? "ON"     : "OFF"   );
+    ui->mouseButtonStatusLabel   ->setText(autoClicker->m_mouseButton    ? "MOUSE2" : "MOUSE1");
+    ui->clickModeStatusLabel     ->setText(autoClicker->m_clickMode      ? "ON"     : "OFF"   );
+    ui->holdButtonModeStatusLabel->setText(autoClicker->m_holdButtonMode ? "ON"     : "OFF"   );
 }
 
 } //namespace sac

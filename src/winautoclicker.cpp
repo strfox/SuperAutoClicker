@@ -53,18 +53,22 @@ QString AutoClicker::getConfigFilePath() {
 
 void AutoClicker::toggleListenMode() {
    qDebug("sac::toggleListenMode");
+   m_listenMode = !m_listenMode;
 }
 
 void AutoClicker::toggleClickMode() {
     qDebug("sac::toggleClickMode");
+    m_clickMode = !m_clickMode;
 }
 
 void AutoClicker::toggleMouseButton() {
     qDebug("sac::toggleMouseButton");
+    m_mouseButton = !m_mouseButton;
 }
 
 void AutoClicker::toggleHoldButtonMode() {
     qDebug("sac::toggleHoldButtonMode");
+    m_holdButtonMode = !m_holdButtonMode;
 }
 
 } // namespace sac

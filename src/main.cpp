@@ -16,11 +16,12 @@ void doMessageLoop(void* _);
 int main(int argc, char *argv[])
 {
     QApplication qtApp(argc, argv);
-    sac::MainWindow mainWindow;
-    sac::AutoClicker autoClicker;
 
-    sac::mainWindow = &mainWindow;
+    sac::AutoClicker autoClicker;
     sac::autoClicker = &autoClicker;
+
+    sac::MainWindow mainWindow;
+    sac::mainWindow = &mainWindow;
 
     bool errors = false;
     bool hooked = false;
