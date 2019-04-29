@@ -1,8 +1,9 @@
 #include "keyboard.h"
 
-#include <QTextStream>
 #include <windows.h>
-
+#include <QString>
+#include <QTextStream>
+#include <QStringList>
 
 #define VK_ABNT_C1 0xC1
 #define VK_ABNT_C2 0xC2
@@ -639,6 +640,11 @@ QString getStringNameFor(keycomb_t keycomb) {
 
     s << keyname;
     return strComb;
+}
+
+keycomb_t parseKeyComb(QString str) {
+    QStringList tokens = str.split(QString(","));
+    //todo
 }
 
 

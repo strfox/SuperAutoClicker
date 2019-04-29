@@ -25,6 +25,7 @@ static std::string actionnames[] = {
     "TOGGLE_HOLD"
 };
 
+extern kb::keycomb_t bindings[];
 
 int createHook();
 

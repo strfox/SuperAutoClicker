@@ -5,6 +5,13 @@
 #include <QSettings>
 #include <QObject>
 
+#include "keyboard.h"
+
+#define CFGKEY_LISTEN "ListenModeKey"
+#define CFGKEY_CLICKMODE "ClickModeKey"
+#define CFGKEY_MOUSEBTN "MouseButtonKey"
+#define CFGKEY_HOLDBTN "HoldButtonModeKey"
+
 namespace sac {
 
 class AutoClicker;
@@ -23,13 +30,15 @@ public:
     void toggleMouseButton();
     void toggleHoldButtonMode();
 
+    QSettings *m_config;
+
     bool m_listenMode     = false;
     bool m_clickMode      = false;
     bool m_mouseButton    = false;
     bool m_holdButtonMode = false;
+
 private:
     QString    getConfigFilePath();
-    QSettings *m_config;
 
 }; // class AutoCLicker
 

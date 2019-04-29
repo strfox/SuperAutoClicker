@@ -16,7 +16,9 @@ typedef struct keycomb_t {
     bool meta;
 } keycomb_t;
 
-QString getStringNameFor(keycomb_t keycomb);
+QString getStringNameFor(keycomb_t);
+
+keycomb_t parseKeyComb(QString);
 
 } // namespace kb
 } // namespace sac
