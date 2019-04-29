@@ -16,7 +16,7 @@ namespace sac {
 namespace hook {
 
 
-static keycomb_t bindings[4] = {
+static kb::keycomb_t bindings[4] = {
     { VK_ADD,      false, false, false, false }, // TOGGLE_CLICK
     { VK_SUBTRACT, false, false, false, false }, // TOGGLE_LISTEN
     { VK_DIVIDE,   false, false, false, false }, // TOGGLE_MOUSE
@@ -46,7 +46,7 @@ int releaseHook() {
 }
 
 
-void setBind(action_t actionkey, keycomb_t keycomb) {
+void setBind(action_t actionkey, kb::keycomb_t keycomb) {
     bindings[actionkey] = keycomb;
 }
 
@@ -74,39 +74,8 @@ QString getLastError() {
 }
 
 
-keycomb_t getKeyCombinationFor(action_t action) {
+kb::keycomb_t getKeyCombinationFor(action_t action) {
     return bindings[action];
-}
-
-
-QString getStringNameFor(keycomb_t keycomb) {
-    BYTE barrKeyState[256] = {0};
-
-    wchar_t szwKeyName[10];
-    int retcode = ToUnicodeEx(
-                keycomb.vkCode,         //       UINT    wVirtKey
-                0,                      //       UINT    wScanCode
-                barrKeyState,           // const BYTE   *lpKeyState
-                szwKeyName,             //       LPWSTR  pwszBuff
-                _countof(szwKeyName),   //       int     cchBuff
-                0,                      //       UINT    wFlags
-                nullptr                 //       HKL     dwhkl
-              );
-
-    const QString strKeyName = QString::fromWCharArray(szwKeyName);
-    QString strFullName;
-    QTextStream stream(&strFullName);
-
-    if (retcode == 0) {
-        stream << "Unknown";
-    } else {
-        if (keycomb.meta)  { stream << "META "; }
-        if (keycomb.ctrl)  { stream << "CTRL "; }
-        if (keycomb.alt)   { stream << "ALT ";  }
-        if (keycomb.shift) { stream << "SHIFT"; }
-        stream << strKeyName;
-    }
-    return strFullName;
 }
 
 
@@ -123,7 +92,7 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
         if (wParam == WM_KEYDOWN && !keysDown[vkCode]) {
             keysDown[vkCode] = TRUE; // Mark key as down
 
-            QString name = getStringNameFor({vkCode, false, false, false, false});
+            QString name = kb::getStringNameFor({vkCode, false, false, false, false});
             qDebug("Key pressed: %s", qUtf8Printable(name));
 
             if (vkCode == bindings[TOGGLE_LISTEN].vkCode) {

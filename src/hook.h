@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-
 #include <QString>
+
+#include "keyboard.h"
 
 namespace sac {
 namespace hook {
@@ -24,33 +25,16 @@ static std::string actionnames[] = {
     "TOGGLE_HOLD"
 };
 
-typedef unsigned long VKCODE;
-
-typedef struct keycomb_t {
-    VKCODE vkCode;
-    bool ctrl;
-    bool shift;
-    bool alt;
-    bool meta;
-} keycomb_t;
-
 
 int createHook();
 
-
 int releaseHook();
 
+void setBind(action_t, kb::keycomb_t);
 
-void setBind(action_t, keycomb_t);
-
+kb::keycomb_t getKeyCombinationFor(action_t action);
 
 QString getLastError();
-
-
-keycomb_t getKeyCombinationFor(action_t action);
-
-
-QString getStringNameFor(keycomb_t keycomb);
 
 
 } // namespace hook

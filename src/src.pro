@@ -11,11 +11,13 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         winautoclicker.cpp \
-        winhook.cpp
+        winhook.cpp \
+        winkeyboard.cpp
 
 HEADERS += \
         autoclicker.h \
         hook.h \
+        keyboard.h \
         mainwindow.h
 
 FORMS += \

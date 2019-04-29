@@ -35,10 +35,10 @@ void MainWindow::putDebugMsg(QString msg) {
 
 
 void MainWindow::refreshUiButtons() {
-    sac::hook::keycomb_t keycombListen = getKeyCombinationFor(sac::hook::TOGGLE_LISTEN);
-    sac::hook::keycomb_t keycombMouse  = getKeyCombinationFor(sac::hook::TOGGLE_MOUSE);
-    sac::hook::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK);
-    sac::hook::keycomb_t keycombHold   = getKeyCombinationFor(sac::hook::TOGGLE_HOLD);
+    kb::keycomb_t keycombListen = getKeyCombinationFor(sac::hook::TOGGLE_LISTEN);
+    kb::keycomb_t keycombMouse  = getKeyCombinationFor(sac::hook::TOGGLE_MOUSE);
+    kb::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK);
+    kb::keycomb_t keycombHold   = getKeyCombinationFor(sac::hook::TOGGLE_HOLD);
 
     ui->listenBindButton     ->setText(getStringNameFor(keycombListen));
     ui->clickBindButton      ->setText(getStringNameFor(keycombClick ));
