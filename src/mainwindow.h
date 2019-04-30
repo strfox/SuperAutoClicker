@@ -23,6 +23,7 @@ public:
 
     void putMsg(QString msg);
     void putDebugMsg(QString msg);
+    void refresh();
 
 private slots:
     void on_actionAbout_triggered();

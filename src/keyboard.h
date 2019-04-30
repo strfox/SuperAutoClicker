@@ -10,15 +10,17 @@ typedef unsigned long vkcode_t;
 
 typedef struct keycomb_t {
     vkcode_t vkCode;
-    bool ctrl;
-    bool shift;
-    bool alt;
     bool meta;
+    bool ctrl;
+    bool alt;
+    bool shift;
 } keycomb_t;
 
 QString getStringNameFor(keycomb_t);
 
 keycomb_t parseKeyComb(QString);
+
+QString stringify(keycomb_t comb);
 
 } // namespace kb
 } // namespace sac

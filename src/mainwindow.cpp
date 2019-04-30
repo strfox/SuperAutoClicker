@@ -16,8 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    refreshUiButtons();
-    refreshUiInfo();
+    refresh();
 }
 
 MainWindow::~MainWindow(){
@@ -37,7 +36,7 @@ void MainWindow::putDebugMsg(QString msg) {
 }
 
 
-void MainWindow::refreshUiButtons() {
+void MainWindow::refresh() {
     kb::keycomb_t keycombListen = getKeyCombinationFor(sac::hook::TOGGLE_LISTEN);
     kb::keycomb_t keycombMouse  = getKeyCombinationFor(sac::hook::TOGGLE_MOUSE );
     kb::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK );
@@ -47,9 +46,7 @@ void MainWindow::refreshUiButtons() {
     ui->clickBindButton      ->setText(getStringNameFor(keycombClick ));
     ui->mouseBindButton      ->setText(getStringNameFor(keycombMouse ));
     ui->holdButtonMouseButton->setText(getStringNameFor(keycombHold  ));
-}
 
-void MainWindow::refreshUiInfo() {
     assert(autoClicker != nullptr);
 
     ui->listenModeStatusLabel    ->setText(autoClicker->m_listenMode     ? "ON"     : "OFF"   );
@@ -58,8 +55,7 @@ void MainWindow::refreshUiInfo() {
     ui->holdButtonModeStatusLabel->setText(autoClicker->m_holdButtonMode ? "ON"     : "OFF"   );
 }
 
-void sac::MainWindow::on_actionAbout_triggered()
-{
+void MainWindow::on_actionAbout_triggered(){
     static QString msg;
     if (msg.isEmpty()) {
         QTextStream s(&msg);
@@ -75,9 +71,8 @@ void sac::MainWindow::on_actionAbout_triggered()
     msgbox.exec();
 }
 
-} //namespace sac
-
-void sac::MainWindow::on_actionQuit_triggered()
-{
+void MainWindow::on_actionQuit_triggered(){
     QApplication::quit();
 }
+
+} //namespace sac

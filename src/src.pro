@@ -8,6 +8,8 @@ TEMPLATE = app
 include(../sac.pri)
 
 SOURCES += \
+        winbeep.cpp \
+        beep.cpp \
         main.cpp \
         mainwindow.cpp \
         winautoclicker.cpp \
@@ -16,6 +18,7 @@ SOURCES += \
 
 HEADERS += \
         autoclicker.h \
+        beep.h \
         hook.h \
         keyboard.h \
         mainwindow.h

@@ -18,6 +18,8 @@ class AutoClicker;
 
 extern AutoClicker* autoClicker;
 
+typedef void* mutex_t;
+
 class AutoClicker: public QObject {
     Q_OBJECT
 
@@ -30,15 +32,21 @@ public:
     void toggleMouseButton();
     void toggleHoldButtonMode();
 
-    QSettings *m_config;
+    void saveConfig();
 
-    bool m_listenMode     = false;
-    bool m_clickMode      = false;
-    bool m_mouseButton    = false;
-    bool m_holdButtonMode = false;
-
+    QSettings    *m_config;
+    bool          m_listenMode     = false;
+    bool          m_clickMode      = false;
+    bool          m_mouseButton    = false;
+    bool          m_holdButtonMode = false;
+    unsigned int  m_msInterval     = 0;
 private:
-    QString    getConfigFilePath();
+    QString  getConfigFilePath();
+
+    void startClickThread();
+    void stopClickThread();
+
+    mutex_t  runMutex;
 
 }; // class AutoCLicker
 
