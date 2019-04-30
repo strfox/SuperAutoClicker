@@ -3,11 +3,11 @@
 namespace sac {
 
 void beepError() {
-    beep(1000, 50);
+    beep(2000, 10);
     beep(0, 10);
-    beep(1000, 50);
+    beep(2000, 20);
     beep(0, 10);
-    beep(1000, 50);
+    beep(2000, 10);
 }
 
 void beepClickModeOn() {

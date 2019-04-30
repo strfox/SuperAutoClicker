@@ -15,9 +15,21 @@
 
 #define CFGKEYS_AMOUNT 4
 
+
 namespace sac {
 
-AutoClicker* autoClicker;
+void _autoclickProc(void*); // Forward declaration
+
+
+typedef struct {
+    unsigned int *msInterval;
+    bool         *mouseButton;
+    void         *hRunMutex;
+} autoClickProcArgs_t;
+
+
+AutoClicker *autoClicker;
+
 
 AutoClicker::AutoClicker() {
 
@@ -78,9 +90,11 @@ AutoClicker::AutoClicker() {
     hook::setBind(hook::TOGGLE_HOLD  , holdBtnComb );
 }
 
+
 AutoClicker::~AutoClicker() {
     delete m_config;
 }
+
 
 QString AutoClicker::getConfigFilePath() {
     QString path = QDir::homePath();
@@ -91,10 +105,12 @@ QString AutoClicker::getConfigFilePath() {
     } else return path;
 }
 
+
 void AutoClicker::toggleListenMode() {
    qDebug("sac::toggleListenMode");
    m_listenMode = !m_listenMode;
 }
+
 
 void AutoClicker::toggleClickMode() {
     qDebug("sac::toggleClickMode");
@@ -104,31 +120,95 @@ void AutoClicker::toggleClickMode() {
     else             { stopClickThread();  }
 }
 
+
 void AutoClicker::toggleMouseButton() {
     qDebug("sac::toggleMouseButton");
     m_mouseButton = !m_mouseButton;
 }
+
 
 void AutoClicker::toggleHoldButtonMode() {
     qDebug("sac::toggleHoldButtonMode");
     m_holdButtonMode = !m_holdButtonMode;
 }
 
+
 void AutoClicker::saveConfig() {
     m_config->sync();
     qDebug("Config saved");
 }
+
 
 void AutoClicker::startClickThread() {
     if (m_msInterval == 0) {
         beepError();
         assert(mainWindow != nullptr);
         mainWindow->putMsg(QString("Please enter milliseconds interval."));
+    } else {
+        assert(m_hRunMutex == nullptr);
+
+        m_hRunMutex = CreateMutex(
+                    nullptr,  // LPSECURITY_ATTRIBUTES lpMutexAttributes
+                    true,     // WINBOOL               bInitialOwner
+                    nullptr   // LPCWSTR               lpName
+                   );
+
+        autoClickProcArgs_t* arg = new autoClickProcArgs_t;
+
+        arg->msInterval  = &m_msInterval;
+        arg->mouseButton = &m_mouseButton;
+        arg->hRunMutex   =  m_hRunMutex;
+
+        uintptr_t ptr =
+                _beginthread(
+                    _autoclickProc, // void (* _StartAddress)(void *) __attribute__((cdecl))
+                    0,              // unsigned int  _StackSize
+                    arg             // void         *_ArgList
+                   );
+
+        m_hThread = reinterpret_cast<void*>(ptr);
     }
 }
 
-void AutoClicker::stopClickThread() {
 
+void AutoClicker::stopClickThread() {
+    ReleaseMutex(m_hRunMutex);
+    WaitForSingleObject(
+                reinterpret_cast<HANDLE>(m_hThread), // HANDLE hHandle
+                1000                                 // DWORD  dwMilliseconds
+               );
+    m_hRunMutex = nullptr;
+    m_hThread = nullptr;
 }
+
+
+void _autoclickProc(/* autoClickProcArgs_t */ void* arg) {
+    autoClickProcArgs_t *props = static_cast<autoClickProcArgs_t *>(arg);
+
+    do {
+        assert(props              != nullptr);
+        assert(props->msInterval  != nullptr);
+        assert(props->mouseButton != nullptr);
+        assert(props->hRunMutex   != nullptr);
+
+        INPUT input;
+        input.type           = INPUT_MOUSE;
+        input.mi.dx          = 0;
+        input.mi.dy          = 0;
+        input.mi.mouseData   = 0;
+        input.mi.dwExtraInfo = 0UL;
+        input.mi.time        = 0;
+
+        if (props->mouseButton)
+             { input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN  | MOUSEEVENTF_LEFTUP);  }
+        else { input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP); }
+
+        SendInput(1, &input, sizeof(INPUT));
+
+    } while (WaitForSingleObject(props->hRunMutex, *props->msInterval) == WAIT_TIMEOUT);
+
+    delete props;
+}
+
 
 } // namespace sac

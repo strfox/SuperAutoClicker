@@ -4,6 +4,7 @@
 #include <QString>
 #include <QSettings>
 #include <QObject>
+#include <memory>
 
 #include "keyboard.h"
 
@@ -14,15 +15,15 @@
 
 namespace sac {
 
+
 class AutoClicker;
+
 
 extern AutoClicker* autoClicker;
 
-typedef void* mutex_t;
 
 class AutoClicker: public QObject {
     Q_OBJECT
-
 public:
     AutoClicker();
     virtual ~AutoClicker();
@@ -39,14 +40,15 @@ public:
     bool          m_clickMode      = false;
     bool          m_mouseButton    = false;
     bool          m_holdButtonMode = false;
-    unsigned int  m_msInterval     = 0;
+    unsigned int  m_msInterval     = 100;
 private:
     QString  getConfigFilePath();
 
     void startClickThread();
     void stopClickThread();
 
-    mutex_t  runMutex;
+    void *m_hRunMutex;
+    void *m_hThread;
 
 }; // class AutoCLicker
 
