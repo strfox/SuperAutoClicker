@@ -132,6 +132,7 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
                  kb::keycombstr({vkCode, false, false, false, false})
                 )
               );
+
             AutoClicker* _ac = autoClicker();
 
             if      (vkCode == bindings[TOGGLE_LISTEN].vkCode) {

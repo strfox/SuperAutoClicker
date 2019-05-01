@@ -8,6 +8,7 @@ TEMPLATE = app
 include(../sac.pri)
 
 SOURCES += \
+        aboutdialog.cpp \
         util.cpp \
         winbeep.cpp \
         beep.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
         winkeyboard.cpp
 
 HEADERS += \
+        aboutdialog.h \
         autoclicker.h \
         beep.h \
         hook.h \
@@ -28,11 +30,20 @@ HEADERS += \
         winkeys.h
 
 FORMS += \
+        aboutdialog.ui \
         mainwindow.ui
 
+RESOURCES += \
+    images.qrc
+
 INCLUDEPATH += $$PWD/../include
+
+RC_FILE = $$PWD/../sac.rc
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+

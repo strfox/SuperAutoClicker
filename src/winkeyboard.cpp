@@ -22,7 +22,7 @@ QString keycombstr(keycomb_t keycomb) {
         keyname = QString("ABNT_C2");
         break;
     case (VK_ADD):
-        keyname = QString("ADD");
+        keyname = QString("NUMPAD+");
         break;
     case (VK_ATTN):
         keyname = QString("ATTN");
@@ -40,10 +40,10 @@ QString keycombstr(keycomb_t keycomb) {
         keyname = QString("CRSEL");
         break;
     case (VK_DECIMAL):
-        keyname = QString("DECIMAL");
+        keyname = QString("NUMPAD.");
         break;
     case (VK_DIVIDE):
-        keyname = QString("DIVIDE");
+        keyname = QString("NUMPAD/");
         break;
     case (VK_EREOF):
         keyname = QString("EREOF");
@@ -172,7 +172,7 @@ QString keycombstr(keycomb_t keycomb) {
         keyname = QString("KEY_Z");
         break;
     case (VK_MULTIPLY):
-        keyname = QString("MULTIPLY");
+        keyname = QString("NUMPAD*");
         break;
     case (VK_NONAME):
         keyname = QString("NONAME");
@@ -316,7 +316,7 @@ QString keycombstr(keycomb_t keycomb) {
         keyname = QString("PROCESSKEY");
         break;
     case (VK_RETURN):
-        keyname = QString("RETURN");
+        keyname = QString("NUMPAD_ENTER");
         break;
     case (VK_SELECT):
         keyname = QString("SELECT");
@@ -328,7 +328,7 @@ QString keycombstr(keycomb_t keycomb) {
         keyname = QString("SPACE");
         break;
     case (VK_SUBTRACT):
-        keyname = QString("SUBTRACT");
+        keyname = QString("NUMPAD-");
         break;
     case (VK_TAB):
         keyname = QString("TAB");

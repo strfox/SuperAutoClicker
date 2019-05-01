@@ -4,9 +4,11 @@
 #include "hook.h"
 #include "autoclicker.h"
 #include "types.h"
+#include "aboutdialog.h"
 
 #include <QDebug>
 #include <QMessageBox>
+#include <QDesktopServices>
 
 namespace sac {
 
@@ -80,24 +82,22 @@ void MainWindow::refresh() {
 
 }
 
-void MainWindow::on_actionAbout_triggered(){
-    static QString msg;
-    if (msg.isEmpty()) {
-        QTextStream s(&msg);
-        s << PROGRAM_NAME
-          << " version " << PROGRAM_VERSION
-          << " by " << PROGRAM_AUTHOR
-          << ". GitHub: " << PROGRAM_REPO;
-    }
 
-    QMessageBox msgbox;
-    msgbox.setWindowTitle("About");
-    msgbox.setText(msg);
-    msgbox.exec();
+void MainWindow::on_actionAbout_triggered(){
+    AboutDialog* about = new AboutDialog(this);
+    about->show();
 }
+
 
 void MainWindow::on_actionQuit_triggered(){
     QApplication::quit();
 }
 
+
+void MainWindow::on_actionHelp_triggered()
+{
+    QDesktopServices::openUrl(QUrl(PROGRAM_REPO));
+}
+
 } //namespace sac
+

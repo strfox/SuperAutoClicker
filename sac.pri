@@ -11,10 +11,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-DEFINES += SAC_WINDOWS
-
-
 DEFINES += PROGRAM_NAME=\\\"SuperAutoClicker\\\"
 DEFINES += PROGRAM_VERSION=\\\"2.0.0\\\"
-DEFINES += PROGRAM_AUTHOR=\\\"MichelFaria\\\"
+DEFINES += PROGRAM_AUTHOR_FIRST_NAME=\\\"Michel\\\"
+DEFINES += PROGRAM_AUTHOR_LAST_NAME=\\\"Faria\\\"
 DEFINES += PROGRAM_REPO=\\\"https://github.com/michelfaria/SuperAutoClicker\\\"
+
+FORMS +=
+
+HEADERS +=
+
+SOURCES +=

@@ -6,7 +6,7 @@
 #include <QApplication>
 #include <QMessageBox>
 
-#ifdef SAC_WINDOWS
+#ifdef Q_OS_WIN
 #include <windows.h>
 
 void doMessageLoop(void* _);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         errors = true;
     }
 
-#ifdef SAC_WINDOWS
+#ifdef Q_OS_WIN
 
     // Do message loop in a different thread so it doesn't time out
 
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         }
     }
 
-#ifdef SAC_WINDOWS
+#ifdef Q_OS_WIN
     // Quit Windows thread
 
     if (windowsThread) {
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     return retval;
 }
 
-#ifdef SAC_WINDOWS
+#ifdef Q_OS_WIN
 void doMessageLoop(void*) {
     MSG msg;
     while (GetMessage(&msg, nullptr, 0, 0) != FALSE) {
