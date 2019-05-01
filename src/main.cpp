@@ -7,7 +7,8 @@
 #include <QMessageBox>
 
 #ifdef Q_OS_WIN
-#include <windows.h>
+#include <Windows.h>
+#include <process.h>
 
 void doMessageLoop(void* _);
 #endif
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
     uintptr_t pThread = _beginthread(doMessageLoop, 0, nullptr);
     HANDLE    hThread = reinterpret_cast<HANDLE>(pThread);
 
-    if (pThread == -1U)
+    if (pThread == -1L)
     {
         // Error while creating thread -- show message box displaying error
         QMessageBox::critical(
@@ -60,7 +61,7 @@ int main(int argc, char *argv[])
                     "Error while creating thread",
                     QString("An error occurred while creating the Windows "
                             "message loop thread. Error code: ")
-                            + QString(strerror(errno)));
+                            + QString(errno));
         errors = true;
     } else {
         windowsThread = true;

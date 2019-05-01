@@ -1,6 +1,6 @@
 #include "hook.h"
 
-#include <windows.h>
+#include <Windows.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -50,7 +50,7 @@ void createKbdHook() {
 
 void releaseKbdHook() {
     assert(_hKbdHook != nullptr);
-    WINBOOL ret = UnhookWindowsHookEx(_hKbdHook);
+    BOOL ret = UnhookWindowsHookEx(_hKbdHook);
     if (!ret) {
         throw std::runtime_error("Could not release hook");
     }
@@ -106,7 +106,7 @@ void createMouseHook() {
 
 void releaseMouseHook() {
     assert(_hMouseHook != nullptr);
-    WINBOOL ret = UnhookWindowsHookEx(_hMouseHook);
+    BOOL ret = UnhookWindowsHookEx(_hMouseHook);
     if (!ret) {
         throw std::runtime_error("Failed to release mouse hook");
     }
