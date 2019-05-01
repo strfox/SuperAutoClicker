@@ -16,20 +16,26 @@
 #include "beep.h"
 #include "util.h"
 
-#define CFGKEYS_AMOUNT 4
-
 
 namespace sac {
 
 
-void _autoclickProc(void*); // Forward declaration
+void _autoclickProc(void*);       // Forward declaration
+void _disableMouseBtnProc(void*); // Forward declaration
 
 
 typedef struct {
-    unsigned int *msInterval;
-    bool         *mouseButton;
-    void         *hRunMutex;
+    unsigned int  *msInterval;
+    mousebtn_t    *mouseButton;
+    void         **hRunMutex;
+    // bool          *holdButton;
 } autoClickProcArgs_t;
+
+
+typedef struct {
+    mousebtn_t *mousebtn;
+    void       *hDisableMouseBtnMutex;
+} disableMouseBtnProcArgs_t;
 
 
 
@@ -73,7 +79,7 @@ AutoClicker::AutoClicker()
         m_config->setValue(CFGKEY_LISTEN    , QString::number(VK_SUBTRACT) + ",0,0,0,0");
         m_config->setValue(CFGKEY_CLICKMODE , QString::number(VK_ADD     ) + ",0,0,0,0");
         m_config->setValue(CFGKEY_MOUSEBTN  , QString::number(VK_DIVIDE  ) + ",0,0,0,0");
-        m_config->setValue(CFGKEY_HOLDBTN   , QString::number(VK_DECIMAL ) + ",0,0,0,0");
+        // m_config->setValue(CFGKEY_HOLDBTN   , QString::number(VK_DECIMAL ) + ",0,0,0,0");
         m_config->sync();
     }
 
@@ -82,12 +88,16 @@ AutoClicker::AutoClicker()
     const int keysAmount = m_config->allKeys().size();
     if (keysAmount != CFGKEYS_AMOUNT)
     {
-        throw std::runtime_error(
-                    std::string("Config might be corrupted. Expected config to have ")
-                         + std::to_string(CFGKEYS_AMOUNT)
-                         + " but instead got "
-                         + std::to_string(keysAmount)
-                  );
+        QString msg =
+               QString("Expected config to have ")
+             + QString::number(CFGKEYS_AMOUNT)
+             + " keys but it has "
+             + QString::number(keysAmount)
+             + " instead. Please edit your configuration at \""
+             + getConfigFilePath()
+             + "\" and restart the program.";
+        QMessageBox::critical(nullptr, tr("Configuration Error"), msg);
+        throw std::runtime_error(msg.toStdString());
     }
 
     // Create keycomb_t instances from QSettings
@@ -95,14 +105,14 @@ AutoClicker::AutoClicker()
     kb::keycomb_t listenComb   = kb::parseKeyComb(m_config->value(CFGKEY_LISTEN   ).toString());
     kb::keycomb_t clickComb    = kb::parseKeyComb(m_config->value(CFGKEY_CLICKMODE).toString());
     kb::keycomb_t mouseBtnComb = kb::parseKeyComb(m_config->value(CFGKEY_MOUSEBTN ).toString());
-    kb::keycomb_t holdBtnComb  = kb::parseKeyComb(m_config->value(CFGKEY_HOLDBTN  ).toString());
+    // kb::keycomb_t holdBtnComb  = kb::parseKeyComb(m_config->value(CFGKEY_HOLDBTN  ).toString());
 
     // Assign config keys to hook
 
-    hook::setBind(hook::TOGGLE_LISTEN, listenComb  );
-    hook::setBind(hook::TOGGLE_CLICK , clickComb   );
-    hook::setBind(hook::TOGGLE_MOUSE , mouseBtnComb);
-    hook::setBind(hook::TOGGLE_HOLD  , holdBtnComb );
+    hook::setBind(TOGGLE_LISTEN, listenComb  );
+    hook::setBind(TOGGLE_CLICK , clickComb   );
+    hook::setBind(TOGGLE_MOUSE , mouseBtnComb);
+    // hook::setBind(TOGGLE_HOLD  , holdBtnComb );
 }
 
 
@@ -144,21 +154,39 @@ void AutoClicker::toggleListenMode() {
        }
    }
    m_listenMode = !m_listenMode;
+
+   MainWindow *_w = mainWindow();
+   if (m_listenMode) {
+       _w->putMsg(tr("Listen Mode: ON"));
+   } else {
+       _w->putMsg(tr("Listen Mode: OFF"));
+   }
    refreshMainWindow();
 }
 
 
 void AutoClicker::toggleClickMode() {
     assert(m_msInterval >= 0);
+    if (m_listenMode) {
+        toggleListenMode();
+    }
+
+    MainWindow *_w = mainWindow();
+
     if (m_msInterval == 0)
     {
         beepError();
-        mainWindow()->putMsg(QString(tr("Please enter milliseconds interval.")));
+        _w->putMsg(QString(tr("Please enter milliseconds interval.")));
     }
     else
     {
-        if (m_clickMode) { stopClickThread();  }
-        else             { startClickThread(); }
+        if (m_clickMode) {
+            stopClickThread();
+            _w->putMsg(tr("Click Mode: OFF"));
+        } else {
+            startClickThread();
+            _w->putMsg(tr("Click Mode: ON"));
+        }
 
         m_clickMode = !m_clickMode;
         refreshMainWindow();
@@ -167,76 +195,96 @@ void AutoClicker::toggleClickMode() {
 
 
 void AutoClicker::toggleMouseButton() {
-    m_mouseButton = !m_mouseButton;
+    /* In case the program is added support for more mouse buttons, this function
+     * will cycle through them, hence the switch statement.
+     */
+    MainWindow *_w = mainWindow();
 
+    switch (m_mouseButton) {
+    case MOUSE1:
+        m_mouseButton = MOUSE2;
+        _w->putMsg(tr("Using MOUSE2 button."));
+        break;
+    case MOUSE2:
+        m_mouseButton = MOUSE1;
+        _w->putMsg(tr("Using MOUSE1 button."));
+        break;
+    }
     refreshMainWindow();
 }
 
 
-void AutoClicker::toggleHoldButtonMode() {
+
+/* void AutoClicker::toggleHoldButtonMode() {
     m_holdButtonMode = !m_holdButtonMode;
-
+    hook::shouldDisableMouseBtn = m_holdButtonMode;
     refreshMainWindow();
-}
+} */
 
 
 void AutoClicker::saveConfig() {
     m_config->sync();
 }
 
+void _startThread(
+        void **hMutex_out,
+        void **hThread_out,
+        void (* _hookProc)(void *) __attribute__((cdecl)),
+        void *procArg
+    ) {
+    assert(*hMutex_out  == nullptr);
+    assert(*hThread_out == nullptr);
 
-bool AutoClicker::startClickThread() {
-    assert(m_hRunMutex == nullptr);
-
-    m_hRunMutex = CreateMutex(
+    *hMutex_out = CreateMutex(
                 nullptr,  // LPSECURITY_ATTRIBUTES lpMutexAttributes
                 true,     // WINBOOL               bInitialOwner
                 nullptr   // LPCWSTR               lpName
-               );
+              );
+    uintptr_t ptr =
+            _beginthread(
+                _hookProc,
+                0,
+                procArg
+                );
+    *hThread_out = reinterpret_cast<void*>(ptr);
+}
 
+void _stopThread(void **hMutex_out, void **hThread_out) {
+    assert(*hMutex_out  != nullptr);
+    assert(*hThread_out != nullptr);
+
+    ReleaseMutex(*hMutex_out);
+    WaitForSingleObject(
+                reinterpret_cast<HANDLE>(hThread_out),
+                1000);
+
+    *hMutex_out  = nullptr;
+    *hThread_out = nullptr;
+}
+
+void AutoClicker::startClickThread() {
     autoClickProcArgs_t* arg = new autoClickProcArgs_t;
 
     arg->msInterval  = &m_msInterval;
     arg->mouseButton = &m_mouseButton;
-    arg->hRunMutex   =  m_hRunMutex;
+    arg->hRunMutex   = &m_hClickMutex;
+    // arg->holdButton  = &m_holdButtonMode;
 
-    uintptr_t ptr =
-            _beginthread(
-                _autoclickProc, // void (* _StartAddress)(void *) __attribute__((cdecl))
-                0,              // unsigned int  _StackSize
-                arg             // void         *_ArgList
-               );
-
-    m_hThread = reinterpret_cast<void*>(ptr);
-    return true;
+    _startThread(&m_hClickMutex, &m_hClickThread, _autoclickProc, arg);
 }
 
 
 void AutoClicker::stopClickThread() {
-    assert(m_hRunMutex != nullptr);
-    assert(m_hThread   != nullptr);
-    ReleaseMutex(m_hRunMutex);
-    WaitForSingleObject(
-                reinterpret_cast<HANDLE>(m_hThread), // HANDLE hHandle
-                1000                                 // DWORD  dwMilliseconds
-           );
-    m_hRunMutex = nullptr;
-    m_hThread   = nullptr;
+    _stopThread(&m_hClickMutex, &m_hClickThread);
 }
 
+
 void AutoClicker::typeNumber(uint number) {
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtype-limits"
-    assert(number >= 0); // WHY
-#pragma GCC diagnostic pop
-
-    if (number > 9U)
-    {
+    assert(number >= 0);
+    if (number > 9U) {
         throw std::invalid_argument(
                     std::string("expected number to be in range 0..9 but number was ")
-                         + std::to_string(number)
-              );
+                         + std::to_string(number));
     }
 
     if (m_listenMode)
@@ -244,26 +292,22 @@ void AutoClicker::typeNumber(uint number) {
         const uint digits = digitsInNumber(m_msInput);
         qDebug("Digits in %d: %d", m_msInput, digits);
 
-        if (digits >= MAX_MS_DIGITS)
-        {
+        if (digits >= MAX_MS_DIGITS) {
             mainWindow()->putMsg(tr("Digit limit reached! Turn off listen mode."));
             beepError();
-        }
-        else
-        {
+        } else {
             m_msInput *= 10;
             m_msInput += number;
             beepTypeMs();
         }
-
         refreshMainWindow();
-    } // endif (m_listenMode)
+    }
 
     assert(digitsInNumber(m_msInput) <= MAX_MS_DIGITS);
 }
 
 
-void _autoclickProc(/* autoClickProcArgs_t */ void* arg) {
+void _autoclickProc(/* autoClickProcArgs_t */ void *arg) {
     autoClickProcArgs_t *props = static_cast<autoClickProcArgs_t *>(arg);
 
     do {
@@ -271,6 +315,7 @@ void _autoclickProc(/* autoClickProcArgs_t */ void* arg) {
         assert(props->msInterval  != nullptr);
         assert(props->mouseButton != nullptr);
         assert(props->hRunMutex   != nullptr);
+        assert(*props->hRunMutex  != nullptr);
 
         INPUT input;
         input.type           = INPUT_MOUSE;
@@ -280,16 +325,40 @@ void _autoclickProc(/* autoClickProcArgs_t */ void* arg) {
         input.mi.dwExtraInfo = 0UL;
         input.mi.time        = 0;
 
-        if (props->mouseButton)
-             { input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN  | MOUSEEVENTF_LEFTUP);  }
-        else { input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP); }
+        switch (*props->mouseButton) {
+        case MOUSE1:
+            input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN  | MOUSEEVENTF_LEFTUP);
+            break;
+        case MOUSE2:
+            input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP);
+            break;
+        }
 
-        SendInput(1, &input, sizeof(INPUT));
+        bool doClick = true;
 
-    } while (WaitForSingleObject(props->hRunMutex, *props->msInterval) == WAIT_TIMEOUT);
+        /* if (*props->holdButton)
+        {
+            int key = -1;
+            // I use a switch statement instead of a ternary because
+            // if I add more values to the mouse enum, then this will have a warning.
+            switch (*props->mouseButton) {
+            case MOUSE1:
+                key = VK_LEFT;
+                break;
+            case MOUSE2:
+                key = VK_RIGHT;
+                break;
+            }
+            assert(key != -1);
+            doClick = GetKeyState(key) < 0;
+        } */
+
+        if (doClick) {
+            SendInput(1, &input, sizeof(INPUT));
+        }
+    } while (WaitForSingleObject(*props->hRunMutex, *props->msInterval) == WAIT_TIMEOUT);
 
     delete props;
 }
-
 
 } // namespace sac

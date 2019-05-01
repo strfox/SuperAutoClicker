@@ -23,6 +23,7 @@ HEADERS += \
         hook.h \
         keyboard.h \
         mainwindow.h \
+        types.h \
         util.h \
         winkeys.h
 

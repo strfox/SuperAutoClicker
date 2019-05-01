@@ -38,16 +38,16 @@ void beepMouseButtonToggle() {
     beep(8000, 50);
 }
 
-void beepHoldModeOn() {
+/* void beepHoldModeOn() {
     beep(500, 50);
     beep(0, 50);
     beep(500, 50);
-}
+} */
 
-void beepHoldModeOff() {
+/* void beepHoldModeOff() {
     beep(200, 50);
     beep(0, 50);
     beep(200, 50);
-}
+} */
 
 } // namespace sac

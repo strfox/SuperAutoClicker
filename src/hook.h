@@ -6,36 +6,28 @@
 #include <QString>
 
 #include "keyboard.h"
+#include "types.h"
 
 namespace sac {
 namespace hook {
 
-typedef enum action_t {
-    TOGGLE_CLICK,
-    TOGGLE_LISTEN,
-    TOGGLE_MOUSE,
-    TOGGLE_HOLD
-} action_t;
-
-
-static std::string actionnames[] = {
-    "TOGGLE_CLICK",
-    "TOGGLE_LISTEN",
-    "TOGGLE_MOUSE",
-    "TOGGLE_HOLD"
-};
-
 extern kb::keycomb_t bindings[];
+extern bool          shouldDisableMouseBtn;
+extern mousebtn_t    mouseBtnToDisable;
 
-int createHook();
+void createKbdHook();
 
-int releaseHook();
+void releaseKbdHook();
 
 void setBind(action_t, kb::keycomb_t);
 
 kb::keycomb_t getKeyCombinationFor(action_t action);
 
 QString getLastError();
+
+void createMouseHook();
+
+void releaseMouseHook();
 
 
 } // namespace hook

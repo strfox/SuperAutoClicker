@@ -13,8 +13,8 @@ void beepListenModeOff();
 void beepTypeMs();
 void beepMsDigitLimitReached();
 void beepMouseButtonToggle();
-void beepHoldModeOn();
-void beepHoldModeOff();
+// void beepHoldModeOn();
+// void beepHoldModeOff();
 
 }
 

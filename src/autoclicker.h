@@ -11,14 +11,12 @@
 #define CFGKEY_LISTEN "ListenModeKey"
 #define CFGKEY_CLICKMODE "ClickModeKey"
 #define CFGKEY_MOUSEBTN "MouseButtonKey"
-#define CFGKEY_HOLDBTN "HoldButtonModeKey"
+// #define CFGKEY_HOLDBTN "HoldButtonModeKey"
 
-#define MAX_MS_DIGITS 6
+#define MAX_MS_DIGITS  6
+#define CFGKEYS_AMOUNT 3
 
 namespace sac {
-
-
-class AutoClicker;
 
 
 class AutoClicker: public QObject {
@@ -30,35 +28,33 @@ public:
     void toggleListenMode();
     void toggleClickMode();
     void toggleMouseButton();
-    void toggleHoldButtonMode();
+    // void toggleHoldButtonMode();
     void typeNumber(uint number);
-
     void saveConfig();
 
-    QSettings *m_config         = nullptr;
-    bool       m_listenMode     = false;
-    bool       m_clickMode      = false;
-    bool       m_mouseButton    = false;
-    bool       m_holdButtonMode = false;
-    uint       m_msInterval     = 0;
-    uint       m_msInput        = 0; // Used only for listen mode input
+    QSettings  *m_config         = nullptr;
+    bool        m_listenMode     = false;
+    bool        m_clickMode      = false;
+    mousebtn_t  m_mouseButton    = MOUSE1;
+    // bool        m_holdButtonMode = false;
+    uint        m_msInterval     = 0;
+    uint        m_msInput        = 0;       // Used only for listen mode input
 private:
     QString  getConfigFilePath();
     void     refreshMainWindow();
     void     mainWindowPutMsg();
+    void     startClickThread();
+    void     stopClickThread();
 
-    bool startClickThread();
-    void stopClickThread();
-
-    void *m_hRunMutex = nullptr;
-    void *m_hThread   = nullptr;
+    void *m_hClickMutex  = nullptr;
+    void *m_hClickThread = nullptr;
 
 }; // class AutoCLicker
-
 
 extern AutoClicker* _autoClicker; // Use autoClicker()
 
 AutoClicker* autoClicker();
+
 
 } // namespace sac
 

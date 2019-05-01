@@ -3,18 +3,10 @@
 
 #include <QString>
 
+#include "types.h"
+
 namespace sac {
 namespace kb {
-
-typedef unsigned long vkcode_t;
-
-typedef struct keycomb_t {
-    vkcode_t vkCode;
-    bool meta;
-    bool ctrl;
-    bool alt;
-    bool shift;
-} keycomb_t;
 
 QString keycombstr(keycomb_t);
 

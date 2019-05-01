@@ -3,6 +3,7 @@
 
 #include "hook.h"
 #include "autoclicker.h"
+#include "types.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -44,22 +45,27 @@ void MainWindow::putDebugMsg(QString msg) {
 
 
 void MainWindow::refresh() {
-    kb::keycomb_t keycombListen = getKeyCombinationFor(sac::hook::TOGGLE_LISTEN);
-    kb::keycomb_t keycombMouse  = getKeyCombinationFor(sac::hook::TOGGLE_MOUSE );
-    kb::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK );
-    kb::keycomb_t keycombHold   = getKeyCombinationFor(sac::hook::TOGGLE_HOLD  );
+    kb::keycomb_t keycombListen = hook::getKeyCombinationFor(TOGGLE_LISTEN);
+    kb::keycomb_t keycombMouse  = hook::getKeyCombinationFor(TOGGLE_MOUSE );
+    kb::keycomb_t keycombClick  = hook::getKeyCombinationFor(TOGGLE_CLICK );
+    // kb::keycomb_t keycombHold   = hook::getKeyCombinationFor(TOGGLE_HOLD  );
 
     ui->listenBindButton     ->setText(keycombstr(keycombListen));
-    ui->clickBindButton      ->setText(keycombstr(keycombClick ));
-    ui->mouseBindButton      ->setText(keycombstr(keycombMouse ));
-    ui->holdButtonMouseButton->setText(keycombstr(keycombHold  ));
+    ui->clickBindButton      ->setText(keycombstr(keycombClick));
+    ui->mouseBindButton      ->setText(keycombstr(keycombMouse));
 
     AutoClicker* _ac = autoClicker();
 
-    ui->listenModeStatusLabel    ->setText(_ac->m_listenMode     ? "ON"     : "OFF"   );
-    ui->mouseButtonStatusLabel   ->setText(_ac->m_mouseButton    ? "MOUSE2" : "MOUSE1");
-    ui->clickModeStatusLabel     ->setText(_ac->m_clickMode      ? "ON"     : "OFF"   );
-    ui->holdButtonModeStatusLabel->setText(_ac->m_holdButtonMode ? "ON"     : "OFF"   );
+    ui->listenModeStatusLabel->setText(_ac->m_listenMode ? "ON" : "OFF" );
+    switch (_ac->m_mouseButton) {
+    case MOUSE1:
+        ui->mouseButtonStatusLabel->setText("MOUSE1");
+        break;
+    case MOUSE2:
+        ui->mouseButtonStatusLabel->setText("MOUSE2");
+        break;
+    }
+    ui->clickModeStatusLabel->setText(_ac->m_clickMode ? "ON" : "OFF" );
 
     if (_ac->m_listenMode) {
         ui->millisecondsStatusLabel->setNum(static_cast<int>(_ac->m_msInput));
