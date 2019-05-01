@@ -57,7 +57,7 @@ As SuperAutoClicker is a work in progress, there is currently no user-friendly w
 The key binding strings have the following format: `KEYCODE,0,0,0,0`. Change the first number in the comma-separated list of numbers to a desired key. The list of valid keycodes can be found [here](KEYCODES.md).
 
 # Download
-SuperAutoClicker 2.0.0 (x86_64)
+SuperAutoClicker 2.0.0 Beta (x86_64)[https://github.com/michelfaria/SuperAutoClicker/releases/download/2.0.0/Super.Auto.Clicker.zip]
 
 [SuperAutoClicker 1.0.0 (x86_64)](https://github.com/michelfaria/SuperAutoClicker/releases/download/1.0.0/SuperAutoClicker.v1.0.0.exe)
 
