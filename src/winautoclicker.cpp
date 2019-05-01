@@ -166,7 +166,7 @@ void AutoClicker::toggleListenMode() {
 
 
 void AutoClicker::toggleClickMode() {
-    assert(m_msInterval >= 0);
+    assert(m_msInterval == 0 || m_msInterval > 0); // >= expansion prevents -Wtype-limits
     if (m_listenMode) {
         toggleListenMode();
     }
@@ -280,7 +280,7 @@ void AutoClicker::stopClickThread() {
 
 
 void AutoClicker::typeNumber(uint number) {
-    assert(number >= 0);
+    assert(number == 0 || number > 0); // >= expansion prevents -Wtype-limits
     if (number > 9U) {
         throw std::invalid_argument(
                     std::string("expected number to be in range 0..9 but number was ")

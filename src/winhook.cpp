@@ -152,7 +152,7 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
                 bool isNumberRowPress = (vkCode >= VK_KEY_0   && vkCode <= VK_KEY_9);
 
                 if (isNumpadPress || isNumberRowPress) {
-                    uint number = -1U;
+                    uint number = 10UL;
                     if (isNumpadPress) {
                         number = vkCode - VK_NUMPAD0;
                     }
@@ -160,7 +160,7 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
                         assert(isNumberRowPress);
                         number = vkCode - VK_KEY_0;
                     }
-                    assert(number >= 0 && number <= 9);
+                    assert( (number == 0 || number > 0) && number <= 9); // >= expansion prevents -Wtype-limits
                     _ac->typeNumber(number);
                 }
             }
