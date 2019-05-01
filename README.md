@@ -67,18 +67,18 @@ SuperAutoClicker 2.0.0 (x86_64)
 
 ## Windows
 
-**Requirements:** **Qt Creator 4.9.0, QMake 3.1, Qt (5.12.3), (GCC 8.2.0 | MinGW)**
+**Requirements:** **Qt Creator 4.9.0, QMake 3.1, Qt (5.12.3), (MSVC 2017)**
 
 - **Command-line:**
     - Release
 
-            qmake src.pro -spec win32-g++ "CONFIG+=qtquickcompiler"
-            make -j8 in Release
+            qmake src.pro -spec win32-msvc "CONFIG+=qtquickcompiler"
+            jom in Release
     
     - Debug
 
-            qmake src.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
-            make -j8 in Debug
+            qmake src.pro -spec win32-msvc "CONFIG+=debug" "CONFIG+=qml_debug"
+            jom in Debug
 
 - **Qt Creator**
     - Open `src/src.pro` and build the project.
