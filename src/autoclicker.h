@@ -13,13 +13,12 @@
 #define CFGKEY_MOUSEBTN "MouseButtonKey"
 #define CFGKEY_HOLDBTN "HoldButtonModeKey"
 
+#define MAX_MS_DIGITS 6
+
 namespace sac {
 
 
 class AutoClicker;
-
-
-extern AutoClicker* autoClicker;
 
 
 class AutoClicker: public QObject {
@@ -36,22 +35,30 @@ public:
 
     void saveConfig();
 
-    QSettings    *m_config;
-    bool          m_listenMode     = false;
-    bool          m_clickMode      = false;
-    bool          m_mouseButton    = false;
-    bool          m_holdButtonMode = false;
-    unsigned int  m_msInterval     = 100;
+    QSettings *m_config         = nullptr;
+    bool       m_listenMode     = false;
+    bool       m_clickMode      = false;
+    bool       m_mouseButton    = false;
+    bool       m_holdButtonMode = false;
+    uint       m_msInterval     = 0;
+    uint       m_msInput        = 0; // Used only for listen mode input
 private:
     QString  getConfigFilePath();
+    void     refreshMainWindow();
+    void     mainWindowPutMsg();
 
-    void startClickThread();
+    bool startClickThread();
     void stopClickThread();
 
-    void *m_hRunMutex;
-    void *m_hThread;
+    void *m_hRunMutex = nullptr;
+    void *m_hThread   = nullptr;
 
 }; // class AutoCLicker
+
+
+extern AutoClicker* _autoClicker; // Use autoClicker()
+
+AutoClicker* autoClicker();
 
 } // namespace sac
 

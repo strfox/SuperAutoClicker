@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+    #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow> 
@@ -8,10 +8,6 @@ namespace Ui {
 }
 
 namespace sac {
-
-class MainWindow; //fwddecl
-
-extern MainWindow* mainWindow;
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +31,12 @@ private:
     void refreshUiButtons();
     void refreshUiInfo();
 }; // class MainWindow
+
+
+extern MainWindow* _mainWindow; // Use mainWindow()
+
+MainWindow* mainWindow();
+
 
 } // namespace sac
 

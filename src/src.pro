@@ -8,6 +8,7 @@ TEMPLATE = app
 include(../sac.pri)
 
 SOURCES += \
+        util.cpp \
         winbeep.cpp \
         beep.cpp \
         main.cpp \
@@ -22,6 +23,7 @@ HEADERS += \
         hook.h \
         keyboard.h \
         mainwindow.h \
+        util.h \
         winkeys.h
 
 FORMS += \

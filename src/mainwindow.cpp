@@ -9,7 +9,14 @@
 
 namespace sac {
 
-MainWindow* mainWindow;
+
+MainWindow* _mainWindow;
+
+MainWindow* mainWindow() {
+    assert(_mainWindow != nullptr);
+    return _mainWindow;
+}
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -42,17 +49,29 @@ void MainWindow::refresh() {
     kb::keycomb_t keycombClick  = getKeyCombinationFor(sac::hook::TOGGLE_CLICK );
     kb::keycomb_t keycombHold   = getKeyCombinationFor(sac::hook::TOGGLE_HOLD  );
 
-    ui->listenBindButton     ->setText(getStringNameFor(keycombListen));
-    ui->clickBindButton      ->setText(getStringNameFor(keycombClick ));
-    ui->mouseBindButton      ->setText(getStringNameFor(keycombMouse ));
-    ui->holdButtonMouseButton->setText(getStringNameFor(keycombHold  ));
+    ui->listenBindButton     ->setText(keycombstr(keycombListen));
+    ui->clickBindButton      ->setText(keycombstr(keycombClick ));
+    ui->mouseBindButton      ->setText(keycombstr(keycombMouse ));
+    ui->holdButtonMouseButton->setText(keycombstr(keycombHold  ));
 
-    assert(autoClicker != nullptr);
+    AutoClicker* _ac = autoClicker();
 
-    ui->listenModeStatusLabel    ->setText(autoClicker->m_listenMode     ? "ON"     : "OFF"   );
-    ui->mouseButtonStatusLabel   ->setText(autoClicker->m_mouseButton    ? "MOUSE2" : "MOUSE1");
-    ui->clickModeStatusLabel     ->setText(autoClicker->m_clickMode      ? "ON"     : "OFF"   );
-    ui->holdButtonModeStatusLabel->setText(autoClicker->m_holdButtonMode ? "ON"     : "OFF"   );
+    ui->listenModeStatusLabel    ->setText(_ac->m_listenMode     ? "ON"     : "OFF"   );
+    ui->mouseButtonStatusLabel   ->setText(_ac->m_mouseButton    ? "MOUSE2" : "MOUSE1");
+    ui->clickModeStatusLabel     ->setText(_ac->m_clickMode      ? "ON"     : "OFF"   );
+    ui->holdButtonModeStatusLabel->setText(_ac->m_holdButtonMode ? "ON"     : "OFF"   );
+
+    if (_ac->m_listenMode) {
+        ui->millisecondsStatusLabel->setNum(static_cast<int>(_ac->m_msInput));
+    }
+    else {
+        int msInterval = static_cast<int>(_ac->m_msInterval);
+        assert(msInterval >= 0);
+        ui->millisecondsStatusLabel->setText(
+                     msInterval > 0 ? QString::number(msInterval) : QString("N/A")
+                    );
+    }
+
 }
 
 void MainWindow::on_actionAbout_triggered(){

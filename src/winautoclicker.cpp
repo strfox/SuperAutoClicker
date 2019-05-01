@@ -1,7 +1,9 @@
 #include "autoclicker.h"
 
 #include <windows.h>
+#include <math.h>
 #include <sstream>
+
 #include <QDebug>
 #include <QStandardPaths>
 #include <QFile>
@@ -12,11 +14,13 @@
 #include "mainwindow.h"
 #include "hook.h"
 #include "beep.h"
+#include "util.h"
 
 #define CFGKEYS_AMOUNT 4
 
 
 namespace sac {
+
 
 void _autoclickProc(void*); // Forward declaration
 
@@ -28,37 +32,44 @@ typedef struct {
 } autoClickProcArgs_t;
 
 
-AutoClicker *autoClicker;
+
+AutoClicker *_autoClicker;
+AutoClicker *autoClicker() {
+    assert(_autoClicker != nullptr);
+    return _autoClicker;
+}
 
 
-AutoClicker::AutoClicker() {
 
+AutoClicker::AutoClicker()
+{
     // Set up config
 
+    QString cfgPath = getConfigFilePath();
+    assert(!cfgPath.isEmpty());
+    QFile file(cfgPath);
+
+    // Touch config file if it doesn't exist
+
+    if (!file.exists())
     {
-       QString cfgPath = getConfigFilePath();
-       assert(!cfgPath.isEmpty());
-       QFile file(cfgPath);
-
-       // Touch config file if it doesn't exist
-
-       if (!file.exists()) {
-           bool ret = file.open(QIODevice::WriteOnly);
-           if (!ret) {
-               throw std::runtime_error(
-                       std::string("Could not create config file at: ")
-                       + cfgPath.toStdString()
-                       + ". Error: "
-                       + std::to_string(file.error())
-                     );
-           }
+       bool ret = file.open(QIODevice::WriteOnly);
+       if (!ret) {
+           throw std::runtime_error(
+                   std::string("Could not create config file at: ")
+                   + cfgPath.toStdString()
+                   + ". Error: "
+                   + std::to_string(file.error())
+                 );
        }
-
-       m_config = new QSettings(cfgPath, QSettings::IniFormat, this);
     }
 
-    if (m_config->allKeys().size() == 0) {
+    m_config = new QSettings(cfgPath, QSettings::IniFormat, this);
+
+    if (m_config->allKeys().size() == 0)
+    {
         // Populate in-memory configuration with default keys and values
+
         m_config->setValue(CFGKEY_LISTEN    , QString::number(VK_SUBTRACT) + ",0,0,0,0");
         m_config->setValue(CFGKEY_CLICKMODE , QString::number(VK_ADD     ) + ",0,0,0,0");
         m_config->setValue(CFGKEY_MOUSEBTN  , QString::number(VK_DIVIDE  ) + ",0,0,0,0");
@@ -103,99 +114,152 @@ AutoClicker::~AutoClicker() {
 QString AutoClicker::getConfigFilePath() {
     QString path = QDir::homePath();
     path = path.append("/SuperAutoClicker Configuration.ini");
-    qDebug("Config file path: %s", qUtf8Printable(path));
-    if (path.isEmpty()) {
+    if (path.isEmpty())
+    {
         throw std::runtime_error("Could not find file path for config file");
-    } else return path;
+    }
+    else return path;
+}
+
+
+void AutoClicker::refreshMainWindow() {
+    mainWindow()->refresh();
 }
 
 
 void AutoClicker::toggleListenMode() {
-   qDebug("sac::toggleListenMode");
+   if (m_listenMode)
+   {
+       if (m_msInput == 0)
+       {
+           mainWindow()->putMsg(tr("Please enter a number."));
+       }
+       else
+       {
+           assert(m_msInput    >  0);
+           m_msInterval = m_msInput;
+           m_msInput    = 0;
+           assert(m_msInput    == 0);
+           assert(m_msInterval >  0);
+       }
+   }
    m_listenMode = !m_listenMode;
+   refreshMainWindow();
 }
 
 
 void AutoClicker::toggleClickMode() {
-    qDebug("sac::toggleClickMode");
-    m_clickMode = !m_clickMode;
+    assert(m_msInterval >= 0);
+    if (m_msInterval == 0)
+    {
+        beepError();
+        mainWindow()->putMsg(QString(tr("Please enter milliseconds interval.")));
+    }
+    else
+    {
+        if (m_clickMode) { stopClickThread();  }
+        else             { startClickThread(); }
 
-    if (m_clickMode) { startClickThread(); }
-    else             { stopClickThread();  }
+        m_clickMode = !m_clickMode;
+        refreshMainWindow();
+    }
 }
 
 
 void AutoClicker::toggleMouseButton() {
-    qDebug("sac::toggleMouseButton");
     m_mouseButton = !m_mouseButton;
+
+    refreshMainWindow();
 }
 
 
 void AutoClicker::toggleHoldButtonMode() {
-    qDebug("sac::toggleHoldButtonMode");
     m_holdButtonMode = !m_holdButtonMode;
+
+    refreshMainWindow();
 }
 
 
 void AutoClicker::saveConfig() {
     m_config->sync();
-    qDebug("Config saved");
 }
 
 
-void AutoClicker::startClickThread() {
-    if (m_msInterval == 0) {
-        beepError();
-        assert(mainWindow != nullptr);
-        mainWindow->putMsg(QString("Please enter milliseconds interval."));
-    } else {
-        assert(m_hRunMutex == nullptr);
+bool AutoClicker::startClickThread() {
+    assert(m_hRunMutex == nullptr);
 
-        m_hRunMutex = CreateMutex(
-                    nullptr,  // LPSECURITY_ATTRIBUTES lpMutexAttributes
-                    true,     // WINBOOL               bInitialOwner
-                    nullptr   // LPCWSTR               lpName
-                   );
+    m_hRunMutex = CreateMutex(
+                nullptr,  // LPSECURITY_ATTRIBUTES lpMutexAttributes
+                true,     // WINBOOL               bInitialOwner
+                nullptr   // LPCWSTR               lpName
+               );
 
-        autoClickProcArgs_t* arg = new autoClickProcArgs_t;
+    autoClickProcArgs_t* arg = new autoClickProcArgs_t;
 
-        arg->msInterval  = &m_msInterval;
-        arg->mouseButton = &m_mouseButton;
-        arg->hRunMutex   =  m_hRunMutex;
+    arg->msInterval  = &m_msInterval;
+    arg->mouseButton = &m_mouseButton;
+    arg->hRunMutex   =  m_hRunMutex;
 
-        uintptr_t ptr =
-                _beginthread(
-                    _autoclickProc, // void (* _StartAddress)(void *) __attribute__((cdecl))
-                    0,              // unsigned int  _StackSize
-                    arg             // void         *_ArgList
-                   );
+    uintptr_t ptr =
+            _beginthread(
+                _autoclickProc, // void (* _StartAddress)(void *) __attribute__((cdecl))
+                0,              // unsigned int  _StackSize
+                arg             // void         *_ArgList
+               );
 
-        m_hThread = reinterpret_cast<void*>(ptr);
-    }
+    m_hThread = reinterpret_cast<void*>(ptr);
+    return true;
 }
 
 
 void AutoClicker::stopClickThread() {
+    assert(m_hRunMutex != nullptr);
+    assert(m_hThread   != nullptr);
     ReleaseMutex(m_hRunMutex);
     WaitForSingleObject(
                 reinterpret_cast<HANDLE>(m_hThread), // HANDLE hHandle
                 1000                                 // DWORD  dwMilliseconds
-               );
+           );
     m_hRunMutex = nullptr;
-    m_hThread = nullptr;
+    m_hThread   = nullptr;
 }
 
 void AutoClicker::typeNumber(uint number) {
-    if (number < 0U || number > 9U) {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
+    assert(number >= 0); // WHY
+#pragma GCC diagnostic pop
+
+    if (number > 9U)
+    {
         throw std::invalid_argument(
                     std::string("expected number to be in range 0..9 but number was ")
                          + std::to_string(number)
               );
     }
-    assert(mainWindow != nullptr);
-    mainWindow->putMsg(QString::number(number));
 
+    if (m_listenMode)
+    {
+        const uint digits = digitsInNumber(m_msInput);
+        qDebug("Digits in %d: %d", m_msInput, digits);
 
+        if (digits >= MAX_MS_DIGITS)
+        {
+            mainWindow()->putMsg(tr("Digit limit reached! Turn off listen mode."));
+            beepError();
+        }
+        else
+        {
+            m_msInput *= 10;
+            m_msInput += number;
+            beepTypeMs();
+        }
+
+        refreshMainWindow();
+    } // endif (m_listenMode)
+
+    assert(digitsInNumber(m_msInput) <= MAX_MS_DIGITS);
 }
 
 

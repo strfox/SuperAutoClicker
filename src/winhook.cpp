@@ -96,34 +96,30 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam)
             keysDown[vkCode] = TRUE; // Mark key as down
 
             qDebug("Key pressed: %s", qUtf8Printable(
-                 kb::getStringNameFor({vkCode, false, false, false, false})
+                 kb::keycombstr({vkCode, false, false, false, false})
                 )
               );
 
-            assert(sac::autoClicker != nullptr); // Ensure autoClicker has been instantiated by this point
+            AutoClicker* _ac = autoClicker();
 
             if (vkCode == bindings[TOGGLE_LISTEN].vkCode)
             {
-                qDebug("Toggle listen");
-                sac::autoClicker->toggleListenMode();
+                _ac->toggleListenMode();
             }
             else
             if (vkCode == bindings[TOGGLE_CLICK ].vkCode)
             {
-                qDebug("Toggle click");
-                sac::autoClicker->toggleClickMode();
+                _ac->toggleClickMode();
             }
             else
             if (vkCode == bindings[TOGGLE_MOUSE ].vkCode)
             {
-                qDebug("Toggle mouse");
-                sac::autoClicker->toggleMouseButton();
+                _ac->toggleMouseButton();
             }
             else
             if (vkCode == bindings[TOGGLE_HOLD ].vkCode)
             {
-                qDebug("Toggle hold");
-                sac::autoClicker->toggleHoldButtonMode();
+                _ac->toggleHoldButtonMode();
             }
             else
             {
@@ -143,7 +139,7 @@ LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam)
                         number = vkCode - VK_KEY_0;
                     }
                     assert(number >= 0 && number <= 9);
-                    sac::autoClicker->typeNumber(number);
+                    _ac->typeNumber(number);
                 }
             }
         }

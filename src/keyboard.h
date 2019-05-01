@@ -16,7 +16,7 @@ typedef struct keycomb_t {
     bool shift;
 } keycomb_t;
 
-QString getStringNameFor(keycomb_t);
+QString keycombstr(keycomb_t);
 
 keycomb_t parseKeyComb(QString);
 

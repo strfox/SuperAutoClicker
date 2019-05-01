@@ -10,7 +10,7 @@
 namespace sac {
 namespace kb {
 
-QString getStringNameFor(keycomb_t keycomb) {
+QString keycombstr(keycomb_t keycomb) {
     QString keyname;
 
     switch (keycomb.vkCode) {

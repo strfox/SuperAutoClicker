@@ -18,10 +18,10 @@ int main(int argc, char *argv[])
     QApplication qtApp(argc, argv);
 
     sac::AutoClicker autoClicker;
-    sac::autoClicker = &autoClicker;
+    sac::_autoClicker = &autoClicker;
 
     sac::MainWindow mainWindow;
-    sac::mainWindow = &mainWindow;
+    sac::_mainWindow = &mainWindow;
 
     bool errors = false;
     bool hooked = false;
