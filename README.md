@@ -54,7 +54,7 @@ You can also change the interval on the go, while the auto clicker is clicking. 
 
 As SuperAutoClicker is a work in progress, there is currently no user-friendly way to change the keybindings. As it turns out, you can configure the keys by editing the .ini configuration file, located in your home directory. In Windows, this should be `"%USERPROFILE%\SuperAutoClicker Configuration.ini"`.
 
-The key binding strings have the following format: `KEYCODE,0,0,0,0`. Change the first number in the comma-separated list of numbers to a desired key. The list of valid keycodes can be found [here](KEYCODES.md).
+The key binding strings have the following format: `KEYCODE,0,0,0,0`, where `KEYCODE` is a **decimal** keycode. Change the first number in the comma-separated list of numbers to a desired key. The list of valid keycodes (in **hexadecimal**) can be found [here](KEYCODES.md).
 
 # Download
 [SuperAutoClicker 2.0.0 Beta (x86_64)](https://github.com/michelfaria/SuperAutoClicker/releases/download/2.0.0/Super.Auto.Clicker.zip)
