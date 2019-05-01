@@ -1,7 +1,9 @@
     #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow> 
+#include <QMainWindow>
+
+#include "aboutdialog.h"
 
 namespace Ui {
     class MainWindow;
@@ -29,6 +31,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    AboutDialog    *m_aboutDialog = nullptr;
 
     void refreshUiButtons();
     void refreshUiInfo();

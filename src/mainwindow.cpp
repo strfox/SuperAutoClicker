@@ -84,8 +84,10 @@ void MainWindow::refresh() {
 
 
 void MainWindow::on_actionAbout_triggered(){
-    AboutDialog* about = new AboutDialog(this);
-    about->show();
+    if (m_aboutDialog == nullptr) {
+        m_aboutDialog = new AboutDialog(this);
+    }
+    m_aboutDialog->show();
 }
 
 
