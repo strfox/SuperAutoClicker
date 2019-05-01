@@ -32,6 +32,7 @@ public:
     void toggleClickMode();
     void toggleMouseButton();
     void toggleHoldButtonMode();
+    void typeNumber(uint number);
 
     void saveConfig();
 

@@ -45,12 +45,12 @@ AutoClicker::AutoClicker() {
        if (!file.exists()) {
            bool ret = file.open(QIODevice::WriteOnly);
            if (!ret) {
-               std::ostringstream os;
-               os << "Could not create config file at ";
-               os << cfgPath.toStdString();
-               os << ". Error: ";
-               os << file.error();
-               throw std::runtime_error(os.str());
+               throw std::runtime_error(
+                       std::string("Could not create config file at: ")
+                       + cfgPath.toStdString()
+                       + ". Error: "
+                       + std::to_string(file.error())
+                     );
            }
        }
 
@@ -69,10 +69,14 @@ AutoClicker::AutoClicker() {
     // Ensure m_config has the right amount of keys
 
     const int keysAmount = m_config->allKeys().size();
-    if (keysAmount != CFGKEYS_AMOUNT) {
-        char buf[256];
-        snprintf(buf, sizeof(buf),  "Config might be corrupted. Expected config to have %d keys but instead got %d", CFGKEYS_AMOUNT, keysAmount);
-        throw std::runtime_error(buf);
+    if (keysAmount != CFGKEYS_AMOUNT)
+    {
+        throw std::runtime_error(
+                    std::string("Config might be corrupted. Expected config to have ")
+                         + std::to_string(CFGKEYS_AMOUNT)
+                         + " but instead got "
+                         + std::to_string(keysAmount)
+                  );
     }
 
     // Create keycomb_t instances from QSettings
@@ -179,6 +183,19 @@ void AutoClicker::stopClickThread() {
                );
     m_hRunMutex = nullptr;
     m_hThread = nullptr;
+}
+
+void AutoClicker::typeNumber(uint number) {
+    if (number < 0U || number > 9U) {
+        throw std::invalid_argument(
+                    std::string("expected number to be in range 0..9 but number was ")
+                         + std::to_string(number)
+              );
+    }
+    assert(mainWindow != nullptr);
+    mainWindow->putMsg(QString::number(number));
+
+
 }
 
 

@@ -8,9 +8,9 @@
 
 #include "mainwindow.h"
 #include "autoclicker.h"
+#include "winkeys.h"
 
-// Assume there are at most 0xFF keys
-#define VK_LEN 0xFF
+#define VK_LEN 0xFF // Assume there are at most 0xFF keys
 
 namespace sac {
 namespace hook {
@@ -63,7 +63,7 @@ QString getLastError() {
                        nullptr,                                   // LPCVOID  source
                        err,                                       // DWORD    dwMessageId
                        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // DWORD    dwLanguageId
-                       (LPSTR) &buf,                              // LPSTR    lpBuffer
+                       reinterpret_cast<LPSTR>(&buf),             // LPSTR    lpBuffer
                        0,                                         // DWORD    nSize
                        nullptr                                    // va_list *Arguments
                    );
@@ -79,39 +79,76 @@ kb::keycomb_t getKeyCombinationFor(action_t action) {
 }
 
 
-LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    static KBDLLHOOKSTRUCT kbdStruct;
-    static BOOL keysDown[VK_LEN]; // Used to store the press-state of virtual keys.
+LRESULT __stdcall _hookProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    static KBDLLHOOKSTRUCT kbdStruct;           // Stores the keyboard details
+    static BOOL keysDown[VK_LEN];               // Stores the press-state of virtual keys
 
-    kbdStruct = *((KBDLLHOOKSTRUCT *) lParam);
+    kbdStruct = *(reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam));  // Store updated kbdStruct
 
-    const DWORD vkCode = kbdStruct.vkCode;
-    assert(vkCode < VK_LEN);
+    const DWORD vkCode = kbdStruct.vkCode;      // Virtual key code
+    assert(vkCode < VK_LEN);                    // Ensure it is within range
 
-    if (nCode >= 0) {
-        if (wParam == WM_KEYDOWN && !keysDown[vkCode]) {
+    if (nCode >= 0)
+    {
+        if (wParam == WM_KEYDOWN && !keysDown[vkCode])
+        {
             keysDown[vkCode] = TRUE; // Mark key as down
 
-            QString name = kb::getStringNameFor({vkCode, false, false, false, false});
-            qDebug("Key pressed: %s", qUtf8Printable(name));
+            qDebug("Key pressed: %s", qUtf8Printable(
+                 kb::getStringNameFor({vkCode, false, false, false, false})
+                )
+              );
 
-            if (vkCode == bindings[TOGGLE_LISTEN].vkCode) {
+            assert(sac::autoClicker != nullptr); // Ensure autoClicker has been instantiated by this point
+
+            if (vkCode == bindings[TOGGLE_LISTEN].vkCode)
+            {
                 qDebug("Toggle listen");
                 sac::autoClicker->toggleListenMode();
             }
-            else if (vkCode == bindings[TOGGLE_CLICK].vkCode) {
+            else
+            if (vkCode == bindings[TOGGLE_CLICK ].vkCode)
+            {
                 qDebug("Toggle click");
                 sac::autoClicker->toggleClickMode();
             }
-            else if (vkCode == bindings[TOGGLE_MOUSE].vkCode) {
+            else
+            if (vkCode == bindings[TOGGLE_MOUSE ].vkCode)
+            {
                 qDebug("Toggle mouse");
                 sac::autoClicker->toggleMouseButton();
             }
-            else if (vkCode == bindings[TOGGLE_HOLD].vkCode) {
+            else
+            if (vkCode == bindings[TOGGLE_HOLD ].vkCode)
+            {
                 qDebug("Toggle hold");
                 sac::autoClicker->toggleHoldButtonMode();
             }
-        } else if (wParam == WM_KEYUP) {
+            else
+            {
+                bool isNumpadPress    = (vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9);
+                bool isNumberRowPress = (vkCode >= VK_KEY_0   && vkCode <= VK_KEY_9);
+
+                if (isNumpadPress || isNumberRowPress)
+                {
+                    uint number = -1U;
+                    if (isNumpadPress)
+                    {
+                        number = vkCode - VK_NUMPAD0;
+                    }
+                    else
+                    {
+                        assert(isNumberRowPress);
+                        number = vkCode - VK_KEY_0;
+                    }
+                    assert(number >= 0 && number <= 9);
+                    sac::autoClicker->typeNumber(number);
+                }
+            }
+        }
+        else if (wParam == WM_KEYUP)
+        {
             keysDown[vkCode] = FALSE; // Mark key as up
         }
     }

@@ -21,7 +21,8 @@ HEADERS += \
         beep.h \
         hook.h \
         keyboard.h \
-        mainwindow.h
+        mainwindow.h \
+        winkeys.h
 
 FORMS += \
         mainwindow.ui
