@@ -70,12 +70,6 @@ The key binding strings have the following format: `KEYCODE,META,CTRL,ALT,SHIFT`
 
 # Download
 
-[SuperAutoClicker 2.0.1_PRE (x86_64)]()
-
-[SuperAutoClicker 2.0.0_PRE (x86_64)](https://github.com/michelfaria/SuperAutoClicker/releases/download/2.0.0/Super.Auto.Clicker.zip)
-
-[SuperAutoClicker 1.0.0 (x86_64)](https://github.com/michelfaria/SuperAutoClicker/releases/download/1.0.0/SuperAutoClicker.v1.0.0.exe)
-
 [All Releases](https://github.com/michelfaria/SuperAutoClicker/releases)
 
 # Building
