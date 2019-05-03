@@ -29,6 +29,8 @@ private slots:
 
     void on_actionHelp_triggered();
 
+    void on_slowClickCheckBox_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     AboutDialog    *m_aboutDialog = nullptr;

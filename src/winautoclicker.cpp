@@ -1,6 +1,6 @@
 #include "autoclicker.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include <process.h>
 #include <math.h>
 #include <sstream>
@@ -29,15 +29,17 @@ typedef struct {
     unsigned int  *msInterval;
     mousebtn_t    *mouseButton;
     void         **hRunMutex;
+    bool          *slowMode;
     // bool          *holdButton;
 } autoClickProcArgs_t;
 
 
+/*
 typedef struct {
     mousebtn_t *mousebtn;
     void       *hDisableMouseBtnMutex;
 } disableMouseBtnProcArgs_t;
-
+*/
 
 
 AutoClicker *_autoClicker;
@@ -262,6 +264,7 @@ void AutoClicker::startClickThread() {
     arg->mouseButton = &m_mouseButton;
     arg->hRunMutex   = &m_hClickMutex;
     // arg->holdButton  = &m_holdButtonMode;
+    arg->slowMode    = &m_slowClickMode;
 
     _startThread(&m_hClickMutex, &m_hClickThread, _autoclickProc, arg);
 }
@@ -308,6 +311,7 @@ void _autoclickProc(/* autoClickProcArgs_t */ void *arg) {
         assert(props->mouseButton != nullptr);
         assert(props->hRunMutex   != nullptr);
         assert(*props->hRunMutex  != nullptr);
+        assert(props->slowMode    != nullptr);
 
         INPUT input;
         input.type           = INPUT_MOUSE;
@@ -319,33 +323,29 @@ void _autoclickProc(/* autoClickProcArgs_t */ void *arg) {
 
         switch (*props->mouseButton) {
         case MOUSE1:
-            input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN  | MOUSEEVENTF_LEFTUP);
+            input.mi.dwFlags = (  MOUSEEVENTF_ABSOLUTE
+                                | MOUSEEVENTF_LEFTDOWN
+                                | (*props->slowMode ? 0 : MOUSEEVENTF_LEFTUP));
             break;
         case MOUSE2:
-            input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP);
+            input.mi.dwFlags = (  MOUSEEVENTF_ABSOLUTE
+                                | MOUSEEVENTF_RIGHTDOWN
+                                | (*props->slowMode ? 0 : MOUSEEVENTF_RIGHTUP));
             break;
         }
 
-        bool doClick = true;
+        SendInput(1, &input, sizeof(INPUT));
 
-        /* if (*props->holdButton)
-        {
-            int key = -1;
-            // I use a switch statement instead of a ternary because
-            // if I add more values to the mouse enum, then this will have a warning.
+        if (*props->slowMode) {
+            Sleep(100); // Sleep 100 milliseconds before lifting mouse button
             switch (*props->mouseButton) {
             case MOUSE1:
-                key = VK_LEFT;
+                input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP);
                 break;
             case MOUSE2:
-                key = VK_RIGHT;
+                input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTUP);
                 break;
             }
-            assert(key != -1);
-            doClick = GetKeyState(key) < 0;
-        } */
-
-        if (doClick) {
             SendInput(1, &input, sizeof(INPUT));
         }
     } while (WaitForSingleObject(*props->hRunMutex, *props->msInterval) == WAIT_TIMEOUT);

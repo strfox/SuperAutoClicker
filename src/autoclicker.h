@@ -33,12 +33,13 @@ public:
     void saveConfig();
 
     QSettings  *m_config         = nullptr;
-    bool        m_listenMode     = false;
-    bool        m_clickMode      = false;
-    mousebtn_t  m_mouseButton    = MOUSE1;
+    bool        m_listenMode     = false;    // "Listen Mode" flag
+    bool        m_clickMode      = false;    // "Click Mode" flag
+    mousebtn_t  m_mouseButton    = MOUSE1;   // Mouse button to press
     // bool        m_holdButtonMode = false;
-    uint        m_msInterval     = 0;
-    uint        m_msInput        = 0;       // Used only for listen mode input
+    uint        m_msInterval     = 0;        // Click interval in milliseconds
+    uint        m_msInput        = 0;        // Used only for "Listen Mode" input
+    bool        m_slowClickMode  = false;    // v2.0.2: "Slow Click" Flag
 private:
     QString  getConfigFilePath();
     void     refreshMainWindow();
@@ -46,13 +47,13 @@ private:
     void     startClickThread();
     void     stopClickThread();
 
-    void *m_hClickMutex  = nullptr;
-    void *m_hClickThread = nullptr;
+    void *m_hClickMutex  = nullptr;          // Mutex handle for "Click Mode" thread
+    void *m_hClickThread = nullptr;          // "Click Mode" thread handle
 
 }; // class AutoCLicker
 
 
-extern AutoClicker* _autoClicker; // Use autoClicker()
+extern AutoClicker* _autoClicker;            // Use autoClicker() for safety
 AutoClicker* autoClicker();
 
 

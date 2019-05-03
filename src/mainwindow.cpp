@@ -12,16 +12,17 @@
 
 namespace sac {
 
-
-MainWindow* _mainWindow;
-
+MainWindow *_mainWindow;
 MainWindow* mainWindow() {
     assert(_mainWindow != nullptr);
     return _mainWindow;
 }
 
+}
 
-MainWindow::MainWindow(QWidget *parent) :
+
+
+sac::MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
@@ -29,24 +30,25 @@ MainWindow::MainWindow(QWidget *parent) :
     refresh();
 }
 
-MainWindow::~MainWindow(){
+sac::MainWindow::~MainWindow(){
     delete ui;
 }
 
 
-void MainWindow::putMsg(QString msg) {
+void sac::MainWindow::putMsg(QString msg) {
     ui->messages->append(msg);
 }
 
 
-void MainWindow::putDebugMsg(QString msg) {
+void sac::MainWindow::putDebugMsg(QString msg) {
+    Q_UNUSED(msg);
 #ifdef QT_DEBUG
     putMsg(msg);
 #endif
 }
 
 
-void MainWindow::refresh() {
+void sac::MainWindow::refresh() {
     kb::keycomb_t keycombListen = hook::getKeyCombinationFor(TOGGLE_LISTEN);
     kb::keycomb_t keycombMouse  = hook::getKeyCombinationFor(TOGGLE_MOUSE );
     kb::keycomb_t keycombClick  = hook::getKeyCombinationFor(TOGGLE_CLICK );
@@ -56,7 +58,7 @@ void MainWindow::refresh() {
     ui->clickBindButton      ->setText(keycombstr(keycombClick));
     ui->mouseBindButton      ->setText(keycombstr(keycombMouse));
 
-    AutoClicker* _ac = autoClicker();
+    AutoClicker *_ac = autoClicker();
 
     ui->listenModeStatusLabel->setText(_ac->m_listenMode ? "ON" : "OFF" );
     switch (_ac->m_mouseButton) {
@@ -83,7 +85,7 @@ void MainWindow::refresh() {
 }
 
 
-void MainWindow::on_actionAbout_triggered(){
+void sac::MainWindow::on_actionAbout_triggered(){
     if (m_aboutDialog == nullptr) {
         m_aboutDialog = new AboutDialog(this);
     }
@@ -91,15 +93,33 @@ void MainWindow::on_actionAbout_triggered(){
 }
 
 
-void MainWindow::on_actionQuit_triggered(){
+void sac::MainWindow::on_actionQuit_triggered(){
     QApplication::quit();
 }
 
 
-void MainWindow::on_actionHelp_triggered()
+void sac::MainWindow::on_actionHelp_triggered()
 {
     QDesktopServices::openUrl(QUrl(PROGRAM_REPO));
 }
 
-} //namespace sac
 
+void sac::MainWindow::on_slowClickCheckBox_stateChanged(int state)
+{
+    AutoClicker *_ac = autoClicker();
+    switch (state) {
+    case Qt::Unchecked:
+        _ac->m_slowClickMode = false;
+        break;
+    case Qt::Checked:
+        _ac->m_slowClickMode = true;
+        break;
+    case Qt::PartiallyChecked:
+        // fall-through
+    default:
+        assert(false);
+        break;
+    }
+
+    putMsg(QString("Slow Click Mode: ").append(_ac->m_slowClickMode ? "ON" : "OFF"));
+}
