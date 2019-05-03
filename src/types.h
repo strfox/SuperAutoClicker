@@ -37,6 +37,14 @@ typedef struct keycomb_t {
     bool ctrl;
     bool alt;
     bool shift;
+
+    bool operator==(const keycomb_t &other) {
+        return     vkCode == other.vkCode
+                && meta   == other.meta
+                && ctrl   == other.ctrl
+                && alt    == other.alt
+                && shift  == other.shift;
+    }
 } keycomb_t;
 
 } // namespace kb

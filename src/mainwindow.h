@@ -39,7 +39,6 @@ private:
 
 
 extern MainWindow* _mainWindow; // Use mainWindow()
-
 MainWindow* mainWindow();
 
 

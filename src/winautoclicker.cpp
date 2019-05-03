@@ -125,8 +125,7 @@ AutoClicker::~AutoClicker() {
 QString AutoClicker::getConfigFilePath() {
     QString path = QDir::homePath();
     path = path.append("/SuperAutoClicker Configuration.ini");
-    if (path.isEmpty())
-    {
+    if (path.isEmpty()) {
         throw std::runtime_error("Could not find file path for config file");
     }
     else return path;
@@ -139,19 +138,15 @@ void AutoClicker::refreshMainWindow() {
 
 
 void AutoClicker::toggleListenMode() {
-   if (m_listenMode)
-   {
-       if (m_msInput == 0)
-       {
-           mainWindow()->putMsg(tr("Please enter a number."));
-       }
-       else
-       {
-           assert(m_msInput    >  0);
+   if (m_listenMode) {
+       if (m_msInput == 0) {
+           mainWindow()->putMsg(tr("Enter a millisecond interval using the number keys."));
+       } else {
+           assert(m_msInput > 0);
            m_msInterval = m_msInput;
-           m_msInput    = 0;
-           assert(m_msInput    == 0);
-           assert(m_msInterval >  0);
+           m_msInput = 0;
+           assert(m_msInput == 0);
+           assert(m_msInterval > 0);
        }
    }
    m_listenMode = !m_listenMode;
@@ -174,13 +169,10 @@ void AutoClicker::toggleClickMode() {
 
     MainWindow *_w = mainWindow();
 
-    if (m_msInterval == 0)
-    {
+    if (m_msInterval == 0) {
         beepError();
-        _w->putMsg(QString(tr("Please enter milliseconds interval.")));
-    }
-    else
-    {
+        _w->putMsg(QString(tr("No millisecond interval entered.")));
+    } else {
         if (m_clickMode) {
             stopClickThread();
             _w->putMsg(tr("Click Mode: OFF"));
@@ -288,8 +280,7 @@ void AutoClicker::typeNumber(uint number) {
                          + std::to_string(number));
     }
 
-    if (m_listenMode)
-    {
+    if (m_listenMode) {
         const uint digits = digitsInNumber(m_msInput);
         qDebug("Digits in %d: %d", m_msInput, digits);
 

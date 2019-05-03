@@ -114,40 +114,58 @@ void releaseMouseHook() {
 }
 
 
+void updateKeyComb(kb::keycomb_t &keyComb, uint vkCode, WPARAM wParam) {
+    const bool keyDown = wParam == WM_KEYDOWN;
+
+    switch (vkCode) {
+    case VK_LWIN:
+    case VK_RWIN:
+        keyComb.meta = keyDown;
+        break;
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+        keyComb.ctrl = keyDown;
+        break;
+    case VK_MENU:
+        keyComb.alt = keyDown;
+        break;
+    case VK_SHIFT:
+        keyComb.shift = keyDown;
+        break;
+    default:
+        keyComb.vkCode = keyDown ? vkCode : -1UL;
+        break;
+    }
+}
+
+
 LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
 {
     static KBDLLHOOKSTRUCT kbdStruct;           // Stores the keyboard details
-    static BOOL keysDown[VK_LEN];               // Stores the press-state of virtual keys
+    static bool            keysDown[VK_LEN];    // Stores the press-state of virtual keys
+    static kb::keycomb_t   keyComb;             // This will store key combination entered by the user
 
     kbdStruct = *(reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam));  // Store updated kbdStruct
 
     const DWORD vkCode = kbdStruct.vkCode;      // Virtual key code
     assert(vkCode < VK_LEN);                    // Ensure it is within range
+    updateKeyComb(keyComb, vkCode, wParam);     // Update the local static keyComb
 
     if (code >= 0) {
         if (wParam == WM_KEYDOWN && !keysDown[vkCode]) {
-            keysDown[vkCode] = TRUE; // Mark key as down
+            keysDown[vkCode] = true;            // Mark key as down
 
-            qDebug("Key pressed: %s", qUtf8Printable(
-                 kb::keycombstr({vkCode, false, false, false, false})
-                )
-              );
+            qDebug("KeyComb: %s", qUtf8Printable(kb::keycombstr(keyComb)));
 
             AutoClicker* _ac = autoClicker();
 
-            if      (vkCode == bindings[TOGGLE_LISTEN].vkCode) {
+            if (keyComb == bindings[TOGGLE_LISTEN]) {
                 _ac->toggleListenMode();
-            }
-            else if (vkCode == bindings[TOGGLE_CLICK ].vkCode) {
+            } else if (keyComb == bindings[TOGGLE_CLICK]) {
                 _ac->toggleClickMode();
-            }
-            else if (vkCode == bindings[TOGGLE_MOUSE ].vkCode) {
+            } else if (keyComb == bindings[TOGGLE_MOUSE]) {
                 _ac->toggleMouseButton();
-            }
-            // else if (vkCode == bindings[TOGGLE_HOLD  ].vkCode) {
-            //    _ac->toggleHoldButtonMode();
-            // }
-            else {
+            } else {
                 bool isNumpadPress    = (vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9);
                 bool isNumberRowPress = (vkCode >= VK_KEY_0   && vkCode <= VK_KEY_9);
 
@@ -155,8 +173,7 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
                     uint number = 10UL;
                     if (isNumpadPress) {
                         number = vkCode - VK_NUMPAD0;
-                    }
-                    else {
+                    } else {
                         assert(isNumberRowPress);
                         number = vkCode - VK_KEY_0;
                     }
@@ -164,9 +181,8 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam)
                     _ac->typeNumber(number);
                 }
             }
-        }
-        else if (wParam == WM_KEYUP) {
-            keysDown[vkCode] = FALSE; // Mark key as up
+        } else if (wParam == WM_KEYUP) {
+            keysDown[vkCode] = false; // Mark key as up
         }
     }
     return CallNextHookEx(_hKbdHook, code, wParam, lParam);

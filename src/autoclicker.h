@@ -51,8 +51,8 @@ private:
 
 }; // class AutoCLicker
 
-extern AutoClicker* _autoClicker; // Use autoClicker()
 
+extern AutoClicker* _autoClicker; // Use autoClicker()
 AutoClicker* autoClicker();
 
 
