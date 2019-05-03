@@ -1,9 +1,30 @@
 ![](https://i.imgur.com/KvqVlJL.png)
 
+# Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [SuperAutoClicker](#superautoclicker)
+  - [Screenshots](#screenshots)
+  - [Supported Operating Systems](#supported-operating-systems)
+  - [Recommendations](#recommendations)
+- [Usage](#usage)
+  - [In a nutshell](#in-a-nutshell)
+  - [Example](#example)
+- [Customizing Keys](#customizing-keys)
+  - [Example](#example-1)
+- [Download](#download)
+- [Building](#building)
+  - [Windows](#windows)
+- [Planned Features](#planned-features)
+- [Troubleshooting](#troubleshooting)
+  - [The autoclicker doesn't work on [GAME].](#the-autoclicker-doesnt-work-on-game)
+- [License](#license)
 
 # SuperAutoClicker
 
 **SuperAutoClicker** is a free, open-source auto clicker that can be controlled on-the-fly by only the keyboard buttons. You can set the interval, toggle it on and off and switch between mouse buttons without ever leaving your game.
+
+## Screenshots
 
 ![](./screenshots/ui_2.0.1_PRE.png)
 ![](./screenshots/about_2.0.1_PRE.png)
@@ -28,14 +49,15 @@ You can press the `Toggle Mouse Button` key to switch between the left and right
 
 You can also change the interval on the go, while the auto clicker is clicking. Simply press turn on Listen Mode, type your millisecond interval and then turn off Listen Mode.
 
-## In a nutshell...
+## In a nutshell
 
 |                           | Description                                                                                                                                      |
-|---------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Toggle Mouse button`     | Switches between left and right mouse buttons.                                                                                                   |
 | `Listen Mode`             | State in which the program listens for your numeric inputs. Your numeric inputs will be stored as millisecond intervals for the autoclicker.     |
 | `Click Mode`              | State in which the program repeatedly clicks with either the left or right mouse button repeatedly, depending on your Toggle Mouse Button state. |
 | `Number Row or NUMPAD0-9` | Inputs milliseconds while in Listen Mode.                                                                                                        |
+| `Slow Click Mode`         | **(Advanced)** Certain games will only work with this option enabled.                                                                                |
 
 ## Example
 
@@ -101,6 +123,13 @@ The key binding strings have the following format: `KEYCODE,META,CTRL,ALT,SHIFT`
 
 - User friendly way to edit keybindings
 
+# Troubleshooting
+
+## The autoclicker doesn't work on [GAME].
+
+The version 2.0.2_PRE comes with `Slow Click Mode` which aims to fix this problem.
+Simply toggle it on and try again.
+
 # License
 
-Project is licensed under MIT License. See LICENSE.txt for details.
+Project is licensed under MIT License. See [LICENSE.md](./LICENSE.md) for details.
