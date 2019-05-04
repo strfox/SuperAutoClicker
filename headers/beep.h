@@ -16,6 +16,6 @@ void beepMouseButtonToggle();
 // void beepHoldModeOn();
 // void beepHoldModeOff();
 
-}
+} // namespace sac
 
 #endif // BEEP_H

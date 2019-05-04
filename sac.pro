@@ -7,13 +7,15 @@ TEMPLATE = app
 
 include(./sac.pri)
 
-LIBS += -luser32
-
 HDIR = $$PWD/headers/
 SDIR = $$PWD/source/
+UIDIR = $$PWD/ui
+
 HDIRWIN32 = $$HDIR/win32
 SDIRWIN32 = $$SDIR/win32
-UIDIR = $$PWD/ui
+
+HDIRUNIX = $$HDIR/unix
+SDIRUNIX = $$SDIR/unix
 
 INCLUDEPATH += $$HDIR $$PWD/include
 
@@ -32,15 +34,28 @@ SOURCES += \
         $$SDIR/util.cpp \
         $$SDIR/main.cpp \
         $$SDIR/mainwindow.cpp \
-        $$SDIR/beep.cpp
+        $$SDIR/beep.cpp \
+        $$SDIR/autoclicker.cpp
 
 win32 {
-    HEADERS += $$HDIRWIN32/winkeys.h
+    LIBS += -luser32
+
+    HEADERS += \
+            $$HDIRWIN32/winkeys.h
+
     SOURCES += \
-            $$SDIRWIN32/winautoclicker.cpp \
-            $$SDIRWIN32/winbeep.cpp \
-            $$SDIRWIN32/winhook.cpp \
-            $$SDIRWIN32/winkeyboard.cpp
+            $$SDIRWIN32/autoclicker.cpp \
+            $$SDIRWIN32/beep.cpp \
+            $$SDIRWIN32/hook.cpp \
+            $$SDIRWIN32/keyboard.cpp
+}
+
+unix {
+    SOURCES += \
+            $$SDIRUNIX/autoclicker.cpp \
+            $$SDIRUNIX/beep.cpp \
+            $$SDIRUNIX/hook.cpp \
+            $$SDIRUNIX/keyboard.cpp
 }
 
 FORMS += \
