@@ -8,7 +8,7 @@
 
 #include "mainwindow.h"
 #include "autoclicker.h"
-#include "winkeys.h"
+#include "win32/winkeys.h"
 
 #define VK_LEN 0xFF // Assume there are at most 0xFF keys
 

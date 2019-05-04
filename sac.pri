@@ -16,9 +16,3 @@ DEFINES += PROGRAM_VERSION=\\\"2.0.2_PRE\\\"
 DEFINES += PROGRAM_AUTHOR_FIRST_NAME=\\\"Michel\\\"
 DEFINES += PROGRAM_AUTHOR_LAST_NAME=\\\"Faria\\\"
 DEFINES += PROGRAM_REPO=\\\"https://github.com/michelfaria/SuperAutoClicker\\\"
-
-FORMS +=
-
-HEADERS +=
-
-SOURCES +=

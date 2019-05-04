@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>../turbo.ico</file>
+        <file>turbo.ico</file>
     </qresource>
 </RCC>

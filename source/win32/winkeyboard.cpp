@@ -5,7 +5,7 @@
 #include <QTextStream>
 #include <QStringList>
 
-#include "winkeys.h"
+#include "win32/winkeys.h"
 
 namespace sac {
 namespace kb {
