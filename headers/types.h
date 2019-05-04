@@ -5,12 +5,7 @@
 
 namespace sac {
 
-typedef enum action_t {
-  TOGGLE_CLICK,
-  TOGGLE_LISTEN,
-  TOGGLE_MOUSE,
-  // TOGGLE_HOLD
-} action_t;
+typedef enum action_t { TOGGLE_CLICK, TOGGLE_LISTEN, TOGGLE_MOUSE } action_t;
 
 static std::string actionnames[] = {"TOGGLE_CLICK", "TOGGLE_LISTEN",
                                     "TOGGLE_MOUSE"};

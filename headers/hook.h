@@ -17,10 +17,6 @@ void createKbdHook();
 
 void releaseKbdHook();
 
-void setBind(action_t, kb::keycomb_t);
-
-kb::keycomb_t getKeyCombinationFor(action_t action);
-
 QString getLastError();
 
 void createMouseHook();

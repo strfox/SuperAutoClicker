@@ -12,7 +12,7 @@
 #include "util.h"
 
 using sac::kb::keycomb_t;
-using sac::kb::parseKeyComb;
+using sac::kb::parse;
 
 namespace sac {
 
@@ -22,38 +22,29 @@ AutoClicker *autoClicker() {
   return _autoClicker;
 }
 
-AutoClicker::AutoClicker() {
+} // namespace sac
+
+keycomb_t sac::getKeybind(action_t action) { return _bindings[action]; }
+
+sac::AutoClicker::AutoClicker() {
   // Set up config
-
-  QString cfgPath = getConfigFilePath();
-  assert(!cfgPath.isEmpty());
-  QFile file(cfgPath);
-
+  QString configPath = getConfigPath();
+  QFile file(getConfigPath());
   // Touch config file if it doesn't exist
+  touchFile(file);
 
-  if (!file.exists()) {
-    bool ret = file.open(QIODevice::WriteOnly);
-    if (!ret) {
-      throw std::runtime_error(
-          std::string("Could not create config file at: ") +
-          cfgPath.toStdString() + ". Error: " + std::to_string(file.error()));
-    }
-  }
+  m_config = new QSettings(configPath, QSettings::IniFormat, this);
 
-  m_config = new QSettings(cfgPath, QSettings::IniFormat, this);
-
-  if (m_config->allKeys().size() == 0) {
-    // Populate in-memory configuration with default keys and values
-    auto keys = getDefaultKeys();
-    assert(keys.size() == 3);
-    m_config->setValue(CFGKEY_LISTEN, kb::stringify(keys[0]));
-    m_config->setValue(CFGKEY_CLICKMODE, kb::stringify(keys[1]));
-    m_config->setValue(CFGKEY_MOUSEBTN, kb::stringify(keys[2]));
+  // Populate in-memory configuration with default keys and values
+  if (m_config->allKeys().empty()) {
+    m_config->setValue(CFGKEY_LISTEN, kb::stringify(_bindings[TOGGLE_LISTEN]));
+    m_config->setValue(CFGKEY_CLICKMODE,
+                       kb::stringify(_bindings[TOGGLE_CLICK]));
+    m_config->setValue(CFGKEY_MOUSEBTN, kb::stringify(_bindings[TOGGLE_MOUSE]));
     m_config->sync();
   }
 
   // Ensure m_config has the right amount of keys
-
   const int keysAmount = m_config->allKeys().size();
   if (keysAmount != CFGKEYS_AMOUNT) {
     QString msg = QString("Expected config to have ") +
@@ -65,25 +56,12 @@ AutoClicker::AutoClicker() {
     throw std::runtime_error(msg.toStdString());
   }
 
-  // Create keycomb_t instances from QSettings
-
-  keycomb_t listenComb =
-      parseKeyComb(m_config->value(CFGKEY_LISTEN).toString());
-  keycomb_t clickComb =
-      parseKeyComb(m_config->value(CFGKEY_CLICKMODE).toString());
-  keycomb_t mouseBtnComb =
-      parseKeyComb(m_config->value(CFGKEY_MOUSEBTN).toString());
-
-  // Assign config keys to hook
-
-  sac::hook::setBind(TOGGLE_LISTEN, listenComb);
-  sac::hook::setBind(TOGGLE_CLICK, clickComb);
-  sac::hook::setBind(TOGGLE_MOUSE, mouseBtnComb);
+  syncBindings();
 }
 
-AutoClicker::~AutoClicker() { delete m_config; }
+sac::AutoClicker::~AutoClicker() { delete m_config; }
 
-QString AutoClicker::getConfigFilePath() {
+QString sac::AutoClicker::getConfigFilePath() {
   QString path = QDir::homePath();
   path = path.append("/SuperAutoClicker Configuration.ini");
   if (path.isEmpty()) {
@@ -93,9 +71,9 @@ QString AutoClicker::getConfigFilePath() {
   }
 }
 
-void AutoClicker::refreshMainWindow() { mainWindow()->refresh(); }
+void sac::AutoClicker::refreshMainWindow() { mainWindow()->refresh(); }
 
-void AutoClicker::toggleListenMode() {
+void sac::AutoClicker::toggleListenMode() {
   if (m_listenMode) {
     if (m_msInput == 0) {
       mainWindow()->putMsg(
@@ -119,7 +97,7 @@ void AutoClicker::toggleListenMode() {
   refreshMainWindow();
 }
 
-void AutoClicker::toggleClickMode() {
+void sac::AutoClicker::toggleClickMode() {
   assert(m_msInterval == 0 ||
          m_msInterval > 0); // >= expansion prevents -Wtype-limits
   if (m_listenMode) {
@@ -145,7 +123,7 @@ void AutoClicker::toggleClickMode() {
   }
 }
 
-void AutoClicker::toggleMouseButton() {
+void sac::AutoClicker::toggleMouseButton() {
   /* In case the program is added support for more mouse buttons, this function
    * will cycle through them, hence the switch statement.
    */
@@ -164,9 +142,9 @@ void AutoClicker::toggleMouseButton() {
   refreshMainWindow();
 }
 
-void AutoClicker::saveConfig() { m_config->sync(); }
+void sac::AutoClicker::saveConfig() { m_config->sync(); }
 
-void AutoClicker::typeNumber(uint number) {
+void sac::AutoClicker::typeNumber(uint number) {
   assert(number == 0 || number > 0); // >= expansion prevents -Wtype-limits
   if (number > 9U) {
     throw std::invalid_argument(
@@ -192,4 +170,26 @@ void AutoClicker::typeNumber(uint number) {
   assert(digitsInNumber(m_msInput) <= MAX_MS_DIGITS);
 }
 
-} // namespace sac
+QString sac::AutoClicker::getConfigPath() {
+  QString cfgPath = getConfigFilePath();
+  assert(!cfgPath.isEmpty());
+  return cfgPath;
+}
+
+void sac::AutoClicker::touchFile(QFile &file) {
+  if (!file.exists()) {
+    bool ret = file.open(QIODevice::WriteOnly);
+    if (!ret) {
+      throw std::runtime_error(
+          std::string("Could not create config file at: ") +
+          file.fileName().toStdString() +
+          ". Error: " + std::to_string(file.error()));
+    }
+  }
+}
+
+void sac::AutoClicker::syncBindings() {
+  _bindings[TOGGLE_LISTEN] = parse(m_config->value(CFGKEY_LISTEN).toString());
+  _bindings[TOGGLE_CLICK] = parse(m_config->value(CFGKEY_CLICKMODE).toString());
+  _bindings[TOGGLE_MOUSE] = parse(m_config->value(CFGKEY_MOUSEBTN).toString());
+}

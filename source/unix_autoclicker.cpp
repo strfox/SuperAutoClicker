@@ -1,5 +1,7 @@
 #include "autoclicker.h"
 
+#include <QDebug>
+
 sac::AutoClicker::AutoClicker() {}
 
 sac::AutoClicker::~AutoClicker() {}

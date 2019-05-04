@@ -1,14 +1,26 @@
 #include "autoclicker.h"
 
+#include <Windows.h>
 #include <math.h>
 #include <process.h>
 #include <sstream>
-#include <windows.h>
 
 #include "beep.h"
 #include "hook.h"
 #include "mainwindow.h"
 #include "util.h"
+
+using sac::kb::keycomb_t;
+
+namespace sac {
+
+keycomb_t _bindings[3] = {
+    {VK_ADD, false, false, false, false},     // TOGGLE_CLICK
+    {VK_SUBTRACT, false, false, false, true}, // TOGGLE_LISTEN
+    {VK_DIVIDE, false, false, false, false},  // TOGGLE_MOUSE
+};
+
+} // namespace sac
 
 void _autoclickProc(void *);       // Forward declaration
 void _disableMouseBtnProc(void *); // Forward declaration
@@ -18,7 +30,6 @@ typedef struct {
   sac::mousebtn_t *mouseButton;
   void **hRunMutex;
   bool *slowMode;
-  // bool          *holdButton;
 } autoClickProcArgs_t;
 
 void _startThread(void **hMutex_out, void **hThread_out,
@@ -43,11 +54,6 @@ void _stopThread(void **hMutex_out, void **hThread_out) {
 
   *hMutex_out = nullptr;
   *hThread_out = nullptr;
-}
-
-std::vector<kb::keycomb_t> getDefaultKeys() {
-  // todo
-  just_throw_a_compiler_error_so_idont_forget_3487328947
 }
 
 void sac::AutoClicker::startClickThread() {
@@ -86,11 +92,11 @@ void _autoclickProc(/* autoClickProcArgs_t */ void *arg) {
     input.mi.time = 0;
 
     switch (*props->mouseButton) {
-    case MOUSE1:
+    case sac::MOUSE1:
       input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN |
                           (*props->slowMode ? 0 : MOUSEEVENTF_LEFTUP));
       break;
-    case MOUSE2:
+    case sac::MOUSE2:
       input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN |
                           (*props->slowMode ? 0 : MOUSEEVENTF_RIGHTUP));
       break;
@@ -101,10 +107,10 @@ void _autoclickProc(/* autoClickProcArgs_t */ void *arg) {
     if (*props->slowMode) {
       Sleep(100); // Sleep 100 milliseconds before lifting mouse button
       switch (*props->mouseButton) {
-      case MOUSE1:
+      case sac::MOUSE1:
         input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP);
         break;
-      case MOUSE2:
+      case sac::MOUSE2:
         input.mi.dwFlags = (MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTUP);
         break;
       }
@@ -115,5 +121,3 @@ void _autoclickProc(/* autoClickProcArgs_t */ void *arg) {
 
   delete props;
 }
-
-} // namespace sac

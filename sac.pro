@@ -11,12 +11,6 @@ HDIR = $$PWD/headers/
 SDIR = $$PWD/source/
 UIDIR = $$PWD/ui
 
-HDIRWIN32 = $$HDIR/win32
-SDIRWIN32 = $$SDIR/win32
-
-HDIRUNIX = $$HDIR/unix
-SDIRUNIX = $$SDIR/unix
-
 INCLUDEPATH += $$HDIR $$PWD/include
 
 HEADERS += \
@@ -35,27 +29,28 @@ SOURCES += \
         $$SDIR/main.cpp \
         $$SDIR/mainwindow.cpp \
         $$SDIR/beep.cpp \
-        $$SDIR/autoclicker.cpp
+        $$SDIR/autoclicker.cpp \
+        $$SDIR/keyboard.cpp
 
 win32 {
     LIBS += -luser32
 
     HEADERS += \
-            $$HDIRWIN32/winkeys.h
+            $$HDIR/win_keys.h
 
     SOURCES += \
-            $$SDIRWIN32/autoclicker.cpp \
-            $$SDIRWIN32/beep.cpp \
-            $$SDIRWIN32/hook.cpp \
-            $$SDIRWIN32/keyboard.cpp
+            $$SDIR/win_autoclicker.cpp \
+            $$SDIR/win_beep.cpp \
+            $$SDIR/win_hook.cpp \
+            $$SDIR/win_keyboard.cpp
 }
 
 unix {
     SOURCES += \
-            $$SDIRUNIX/autoclicker.cpp \
-            $$SDIRUNIX/beep.cpp \
-            $$SDIRUNIX/hook.cpp \
-            $$SDIRUNIX/keyboard.cpp
+            $$SDIR/unix_autoclicker.cpp \
+            $$SDIR/unix_beep.cpp \
+            $$SDIR/unix_hook.cpp \
+            $$SDIR/unix_keyboard.cpp
 }
 
 FORMS += \

@@ -38,9 +38,9 @@ void sac::MainWindow::putDebugMsg(QString msg) {
 }
 
 void sac::MainWindow::refresh() {
-  kb::keycomb_t keycombListen = hook::getKeyCombinationFor(TOGGLE_LISTEN);
-  kb::keycomb_t keycombMouse = hook::getKeyCombinationFor(TOGGLE_MOUSE);
-  kb::keycomb_t keycombClick = hook::getKeyCombinationFor(TOGGLE_CLICK);
+  kb::keycomb_t keycombListen = sac::getKeybind(TOGGLE_LISTEN);
+  kb::keycomb_t keycombMouse = sac::getKeybind(TOGGLE_MOUSE);
+  kb::keycomb_t keycombClick = sac::getKeybind(TOGGLE_CLICK);
   // kb::keycomb_t keycombHold   = hook::getKeyCombinationFor(TOGGLE_HOLD  );
 
   ui->listenBindButton->setText(keycombstr(keycombListen));

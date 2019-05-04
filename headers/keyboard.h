@@ -10,7 +10,7 @@ namespace kb {
 
 QString keycombstr(keycomb_t);
 
-keycomb_t parseKeyComb(QString);
+keycomb_t parse(QString);
 
 QString stringify(keycomb_t comb);
 

@@ -1,13 +1,15 @@
 #ifndef AUTOCLICKER_H
 #define AUTOCLICKER_H
 
+#include <QFile>
 #include <QObject>
 #include <QSettings>
 #include <QString>
+
 #include <memory>
+#include <vector>
 
 #include "keyboard.h"
-#include <vector>
 
 #define CFGKEY_LISTEN "ListenModeKey"
 #define CFGKEY_CLICKMODE "ClickModeKey"
@@ -17,11 +19,9 @@
 
 namespace sac {
 
-static kb::keycomb_t bindings[3] = {
-    {0, false, false, false, false}, // TOGGLE_CLICK
-    {0, false, false, false, true},  // TOGGLE_LISTEN
-    {0, false, false, false, false}, // TOGGLE_MOUSE
-};
+extern kb::keycomb_t _bindings[];
+
+kb::keycomb_t getKeybind(action_t action);
 
 class AutoClicker : public QObject {
   Q_OBJECT
@@ -44,18 +44,22 @@ public:
   bool m_clickMode = false;          // "Click Mode" flag
   bool m_slowClickMode = false;      // v2.0.2: "Slow Click" Flag
 
+  void syncBindings();
+
 private:
   QString getConfigFilePath();
   void refreshMainWindow();
   void mainWindowPutMsg();
 
-  std::vector<kb::keycomb_t> getDefaultKeys(); // Platform-specific
-  void startClickThread();                     // Platform-specific
-  void stopClickThread();                      // Platform-specific
+  void startClickThread(); // Platform-specific
+  void stopClickThread();  // Platform-specific
 
   void *m_hClickMutex = nullptr;  // Mutex handle for "Click Mode" thread
   void *m_hClickThread = nullptr; // "Click Mode" thread handle
 
+  QString getConfigPath();
+  void touchFile(QFile &file);
+  void insertDefaultKeysAndValues();
 }; // class AutoCLicker
 
 extern AutoClicker *_autoClicker; // Use autoClicker() for safety

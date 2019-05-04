@@ -8,30 +8,18 @@
 
 #include "autoclicker.h"
 #include "mainwindow.h"
-#include "win32/winkeys.h"
+#include "win_keys.h"
 
 #define VK_LEN 0xFF // Assume there are at most 0xFF keys
 
-namespace sac {
-namespace hook {
+using sac::kb::keycomb_t;
 
 LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam);
-LRESULT __stdcall _disableMouseButtonProc(int code, WPARAM wParam,
-                                          LPARAM lParam);
-
-kb::keycomb_t bindings[3] = {
-    {VK_ADD, false, false, false, false},     // TOGGLE_CLICK
-    {VK_SUBTRACT, false, false, false, true}, // TOGGLE_LISTEN
-    {VK_DIVIDE, false, false, false, false},  // TOGGLE_MOUSE
-    // { VK_MULTIPLY, false, false, false, false }  // TOGGLE_HOLD
-};
-bool shouldDisableMouseBtn = false;
-mousebtn_t mouseBtnToDisable = MOUSE1;
 
 static HHOOK _hKbdHook;
 static HHOOK _hMouseHook;
 
-void createKbdHook() {
+void sac::hook::createKbdHook() {
   assert(_hKbdHook == nullptr);
   _hKbdHook = SetWindowsHookEx(WH_KEYBOARD_LL,    // int       idHook
                                _keyboardHookProc, // HOOKPROC  lpfn
@@ -43,7 +31,7 @@ void createKbdHook() {
   }
 }
 
-void releaseKbdHook() {
+void sac::hook::releaseKbdHook() {
   assert(_hKbdHook != nullptr);
   BOOL ret = UnhookWindowsHookEx(_hKbdHook);
   if (!ret) {
@@ -51,11 +39,7 @@ void releaseKbdHook() {
   }
 }
 
-void setBind(action_t actionkey, kb::keycomb_t keycomb) {
-  bindings[actionkey] = keycomb;
-}
-
-QString getLastError() {
+QString sac::hook::getLastError() {
   DWORD err = GetLastError();
   if (err == 0) {
     return nullptr;
@@ -78,30 +62,28 @@ QString getLastError() {
   }
 }
 
-kb::keycomb_t getKeyCombinationFor(action_t action) { return bindings[action]; }
-
-void createMouseHook() {
-  assert(_hMouseHook == nullptr);
-  _hMouseHook = SetWindowsHookEx(WH_MOUSE_LL,             // int       idHook
-                                 _disableMouseButtonProc, // HOOKPROC  lpfn
-                                 nullptr,                 // HINSTANCE hmod
-                                 0 // DWORD     dwThreadId
-  );
-  if (_hMouseHook == nullptr) {
-    throw std::runtime_error("Failed to create mouse hook");
-  }
+void sac::hook::createMouseHook() {
+  //  assert(_hMouseHook == nullptr);
+  //  _hMouseHook = SetWindowsHookEx(WH_MOUSE_LL,             // int idHook
+  //                                 _disableMouseButtonProc, // HOOKPROC  lpfn
+  //                                 nullptr,                 // HINSTANCE hmod
+  //                                 0 // DWORD     dwThreadId
+  //  );
+  //  if (_hMouseHook == nullptr) {
+  //    throw std::runtime_error("Failed to create mouse hook");
+  //  }
 }
 
-void releaseMouseHook() {
-  assert(_hMouseHook != nullptr);
-  BOOL ret = UnhookWindowsHookEx(_hMouseHook);
-  if (!ret) {
-    throw std::runtime_error("Failed to release mouse hook");
-  }
-  _hMouseHook = nullptr;
+void sac::hook::releaseMouseHook() {
+  //  assert(_hMouseHook != nullptr);
+  //  BOOL ret = UnhookWindowsHookEx(_hMouseHook);
+  //  if (!ret) {
+  //    throw std::runtime_error("Failed to release mouse hook");
+  //  }
+  //  _hMouseHook = nullptr;
 }
 
-void updateKeyComb(kb::keycomb_t &keyComb, uint vkCode, WPARAM wParam) {
+void _updateKeyComb(keycomb_t &keyComb, uint vkCode, WPARAM wParam) {
   const bool keyDown = wParam == WM_KEYDOWN;
 
   switch (vkCode) {
@@ -113,14 +95,12 @@ void updateKeyComb(kb::keycomb_t &keyComb, uint vkCode, WPARAM wParam) {
   case VK_RCONTROL:
     keyComb.ctrl = keyDown;
     break;
-  case VK_MENU:
-    keyComb.alt = keyDown;
-    break;
-  case VK_SHIFT:
+  case VK_LSHIFT:
+  case VK_RSHIFT:
     keyComb.shift = keyDown;
     break;
   default:
-    keyComb.vkCode = keyDown ? vkCode : -1UL;
+    keyComb.vkCode = keyDown ? vkCode : 0;
     break;
   }
 }
@@ -128,29 +108,30 @@ void updateKeyComb(kb::keycomb_t &keyComb, uint vkCode, WPARAM wParam) {
 LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam) {
   static KBDLLHOOKSTRUCT kbdStruct; // Stores the keyboard details
   static bool keysDown[VK_LEN];     // Stores the press-state of virtual keys
-  static kb::keycomb_t
+  static keycomb_t
       keyComb; // This will store key combination entered by the user
 
   kbdStruct =
       *(reinterpret_cast<KBDLLHOOKSTRUCT *>(lParam)); // Store updated kbdStruct
 
-  const DWORD vkCode = kbdStruct.vkCode;  // Virtual key code
-  assert(vkCode < VK_LEN);                // Ensure it is within range
-  updateKeyComb(keyComb, vkCode, wParam); // Update the local static keyComb
+  const DWORD vkCode = kbdStruct.vkCode; // Virtual key code
+  assert(vkCode < VK_LEN);               // Ensure it is within range
+  _updateKeyComb(keyComb, vkCode,
+                 wParam); // Update the function-local static keyComb
 
   if (code >= 0) {
     if (wParam == WM_KEYDOWN && !keysDown[vkCode]) {
       keysDown[vkCode] = true; // Mark key as down
 
-      qDebug("KeyComb: %s", qUtf8Printable(kb::keycombstr(keyComb)));
+      qDebug("KeyComb: %s", qUtf8Printable(sac::kb::keycombstr(keyComb)));
 
-      AutoClicker *_ac = autoClicker();
+      sac::AutoClicker *_ac = sac::autoClicker();
 
-      if (keyComb == bindings[TOGGLE_LISTEN]) {
+      if (keyComb == sac::getKeybind(sac::TOGGLE_LISTEN)) {
         _ac->toggleListenMode();
-      } else if (keyComb == bindings[TOGGLE_CLICK]) {
+      } else if (keyComb == sac::getKeybind(sac::TOGGLE_CLICK)) {
         _ac->toggleClickMode();
-      } else if (keyComb == bindings[TOGGLE_MOUSE]) {
+      } else if (keyComb == sac::getKeybind(sac::TOGGLE_MOUSE)) {
         _ac->toggleMouseButton();
       } else {
         bool isNumpadPress = (vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9);
@@ -175,27 +156,3 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam) {
   }
   return CallNextHookEx(_hKbdHook, code, wParam, lParam);
 }
-
-LRESULT __stdcall _disableMouseButtonProc(int code, WPARAM wParam,
-                                          LPARAM lParam) {
-  if (shouldDisableMouseBtn) {
-    if (code >= 0) {
-      switch (wParam) {
-      case WM_LBUTTONDOWN:
-      case WM_LBUTTONUP:
-        if (mouseBtnToDisable == MOUSE1)
-          return -1;
-        break;
-      case WM_RBUTTONDOWN:
-      case WM_RBUTTONUP:
-        if (mouseBtnToDisable == MOUSE2)
-          return -1;
-        break;
-      }
-    }
-  }
-  return CallNextHookEx(_hMouseHook, code, wParam, lParam);
-}
-
-} // namespace hook
-} // namespace sac
