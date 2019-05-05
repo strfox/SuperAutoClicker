@@ -11,37 +11,38 @@
 static std::unique_ptr<std::thread> eventThread;
 
 [[noreturn]] void _XEventThread() {
-  Display *d = XOpenDisplay(nullptr);
-  assert(d != nullptr);
+  Display *display;
+  Window window;
+  XEvent ev;
+  int s;
 
-  KeySym ks;
-  XComposeStatus xCS;
-  char kBuf[20]; // Stores the pressed key's name
-  int len;       // Length of the null-terminated string stored in szKeyBuf
+  // Open connection with the X display server
+  display = XOpenDisplay(nullptr);
+  if (display == nullptr) {
+    throw std::runtime_error("Cannot open connection with X display server");
+  }
+  s = DefaultScreen(display);
+  window = XRootWindow(display, s);
+  XSelectInput(display, window, KeyPressMask | KeyReleaseMask);
 
   while (true) {
-    XEvent ev;
-    XNextEvent(d, &ev);
-
+    XNextEvent(display, &ev);
+    qDebug("XEvent: %d", ev.type);
     switch (ev.type) {
     case KeyPress:
-      len = XLookupString(&ev.xkey, kBuf, sizeof(kBuf), &ks, &xCS);
-
-      if (len > 0 && isprint(kBuf[0])) {
-        kBuf[len] = '\0';
-        qDebug("XKeyPressed: %s", kBuf);
-      } else {
-        qDebug("XKeyPressed: %d", static_cast<int>(ks));
-      }
-
+      qDebug("KeyPress");
       break;
     }
   }
+
+  // Close the connection
+  XCloseDisplay(display);
 }
 
 void sac::hook::createKbdHook() {
   assert(eventThread.get() == nullptr);
   eventThread.reset(new std::thread(_XEventThread));
+  qDebug("UnixKbdHookCreated");
   assert(eventThread.get() != nullptr);
 }
 
