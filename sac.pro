@@ -46,7 +46,7 @@ win32 {
 }
 
 unix {
-    LIBS += -lX11
+    LIBS += -lX11 -lXext -lXi
 
     SOURCES += \
             $$SDIR/unix_autoclicker.cpp \
