@@ -11,8 +11,6 @@
 namespace sac {
 namespace hook {
 
-extern kb::keycomb_t bindings[];
-
 void createKbdHook();
 
 void releaseKbdHook();

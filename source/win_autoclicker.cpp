@@ -12,15 +12,11 @@
 
 using sac::kb::keycomb_t;
 
-namespace sac {
-
-keycomb_t _bindings[3] = {
+keycomb_t sac::_bindings[3] = {
     {VK_ADD, false, false, false, false},     // TOGGLE_CLICK
     {VK_SUBTRACT, false, false, false, true}, // TOGGLE_LISTEN
     {VK_DIVIDE, false, false, false, false},  // TOGGLE_MOUSE
 };
-
-} // namespace sac
 
 void _autoclickProc(void *);       // Forward declaration
 void _disableMouseBtnProc(void *); // Forward declaration

@@ -46,6 +46,8 @@ win32 {
 }
 
 unix {
+    LIBS += -lX11
+
     SOURCES += \
             $$SDIR/unix_autoclicker.cpp \
             $$SDIR/unix_beep.cpp \

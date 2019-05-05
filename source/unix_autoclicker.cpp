@@ -2,23 +2,11 @@
 
 #include <QDebug>
 
-sac::AutoClicker::AutoClicker() {}
+using sac::kb::keycomb_t;
 
-sac::AutoClicker::~AutoClicker() {}
-
-void sac::AutoClicker::toggleClickMode() {}
-
-void sac::AutoClicker::toggleListenMode() {}
-
-void sac::AutoClicker::toggleMouseButton() {}
-
-void sac::AutoClicker::typeNumber(uint number) {}
-
-void sac::AutoClicker::saveConfig() {}
-
-QString sac::AutoClicker::getConfigFilePath() {}
-
-void sac::AutoClicker::refreshMainWindow() {}
+keycomb_t sac::_bindings[CFGKEYS_AMOUNT] = {{0, false, false, false, false},
+                                            {0, false, false, false, false},
+                                            {0, false, false, false, false}};
 
 void sac::AutoClicker::mainWindowPutMsg() {}
 
