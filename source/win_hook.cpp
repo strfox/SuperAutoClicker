@@ -17,7 +17,6 @@ using sac::kb::keycomb_t;
 LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam);
 
 static HHOOK _hKbdHook;
-static HHOOK _hMouseHook;
 
 void sac::hook::createKbdHook() {
   assert(_hKbdHook == nullptr);
@@ -83,24 +82,24 @@ void sac::hook::releaseMouseHook() {
   //  _hMouseHook = nullptr;
 }
 
-void _updateKeyComb(keycomb_t &keyComb, uint vkCode, WPARAM wParam) {
+void _updateKeyComb(keycomb_t *keyComb, uint vkCode, WPARAM wParam) {
   const bool keyDown = wParam == WM_KEYDOWN;
 
   switch (vkCode) {
   case VK_LWIN:
   case VK_RWIN:
-    keyComb.meta = keyDown;
+    keyComb->meta = keyDown;
     break;
   case VK_LCONTROL:
   case VK_RCONTROL:
-    keyComb.ctrl = keyDown;
+    keyComb->ctrl = keyDown;
     break;
   case VK_LSHIFT:
   case VK_RSHIFT:
-    keyComb.shift = keyDown;
+    keyComb->shift = keyDown;
     break;
   default:
-    keyComb.vkCode = keyDown ? vkCode : 0;
+    keyComb->vkCode = keyDown ? vkCode : 0;
     break;
   }
 }
@@ -116,7 +115,7 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam) {
 
   const DWORD vkCode = kbdStruct.vkCode; // Virtual key code
   assert(vkCode < VK_LEN);               // Ensure it is within range
-  _updateKeyComb(keyComb, vkCode,
+  _updateKeyComb(&keyComb, vkCode,
                  wParam); // Update the function-local static keyComb
 
   if (code >= 0) {
@@ -127,18 +126,43 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam) {
 
       sac::AutoClicker *_ac = sac::autoClicker();
 
-      if (keyComb == sac::getKeybind(sac::TOGGLE_LISTEN)) {
+      if (_ac->m_changeInputListenMode) {
+        // User is changing the keybindings. In this mode we have to ignore all
+        // key modifiers.
+        switch (keyComb.vkCode) {
+        case VK_LWIN:
+        case VK_RWIN:
+        case VK_LCONTROL:
+        case VK_RCONTROL:
+        case VK_LSHIFT:
+        case VK_RSHIFT:
+        case 0x0:
+          // Ignore
+          break;
+        default:
+          // Send the key combination to the autoclicker
+          _ac->setKeybinding(keyComb);
+          break;
+        }
+      } else if (keyComb == sac::getKeybind(sac::TOGGLE_LISTEN)) {
+        // Key combination matches "Listen Mode" bind
         _ac->toggleListenMode();
       } else if (keyComb == sac::getKeybind(sac::TOGGLE_CLICK)) {
+        // Key combination matches "Click Mode" bind
         _ac->toggleClickMode();
       } else if (keyComb == sac::getKeybind(sac::TOGGLE_MOUSE)) {
+        // Key combination matches "Toggle Mouse" bind
         _ac->toggleMouseButton();
       } else {
+        // Key pressed doesn't match any bindings, but if it's a number press,
+        // notify the AutoClicker that a number key was pressed and which number
+        // it was.
         bool isNumpadPress = (vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9);
         bool isNumberRowPress = (vkCode >= VK_KEY_0 && vkCode <= VK_KEY_9);
 
         if (isNumpadPress || isNumberRowPress) {
-          uint number = 10UL;
+          // Parse the number from the pressed number key
+          uint number;
           if (isNumpadPress) {
             number = vkCode - VK_NUMPAD0;
           } else {
@@ -146,7 +170,7 @@ LRESULT __stdcall _keyboardHookProc(int code, WPARAM wParam, LPARAM lParam) {
             number = vkCode - VK_KEY_0;
           }
           assert((number == 0 || number > 0) &&
-                 number <= 9); // >= expansion prevents -Wtype-limits
+                 number <= 9); // `>=` expansion prevents -Wtype-limits
           _ac->typeNumber(number);
         }
       }

@@ -91,8 +91,10 @@ void sac::AutoClicker::toggleListenMode() {
   MainWindow *_w = mainWindow();
   if (m_listenMode) {
     _w->putMsg(tr("Listen Mode: ON"));
+    beepOn();
   } else {
     _w->putMsg(tr("Listen Mode: OFF"));
+    beepOff();
   }
   refreshMainWindow();
 }
@@ -113,9 +115,11 @@ void sac::AutoClicker::toggleClickMode() {
     if (m_clickMode) {
       stopClickThread();
       _w->putMsg(tr("Click Mode: OFF"));
+      beepOff();
     } else {
       startClickThread();
       _w->putMsg(tr("Click Mode: ON"));
+      beepOn();
     }
 
     m_clickMode = !m_clickMode;
@@ -162,7 +166,7 @@ void sac::AutoClicker::typeNumber(uint number) {
     } else {
       m_msInput *= 10;
       m_msInput += number;
-      beepTypeMs();
+      beepType();
     }
     refreshMainWindow();
   }
@@ -192,4 +196,20 @@ void sac::AutoClicker::syncBindings() {
   _bindings[TOGGLE_LISTEN] = parse(m_config->value(CFGKEY_LISTEN).toString());
   _bindings[TOGGLE_CLICK] = parse(m_config->value(CFGKEY_CLICKMODE).toString());
   _bindings[TOGGLE_MOUSE] = parse(m_config->value(CFGKEY_MOUSEBTN).toString());
+}
+
+// v2.0.3
+void sac::AutoClicker::setKeybinding(kb::keycomb_t keyComb) {
+  assert(m_changeInputListenMode);
+  assert(m_changeInputWhich != nullptr);
+  _bindings[*m_changeInputWhich] = keyComb;
+
+  m_config->setValue(
+      ACTION_TO_CFGKEY(*m_changeInputWhich),
+      kb::stringify(keyComb)); // Write changes to in-memory config
+  saveConfig();                // Persist changes
+  refreshMainWindow();         // Refresh UI
+
+  m_changeInputWhich.reset();
+  m_changeInputListenMode = false;
 }

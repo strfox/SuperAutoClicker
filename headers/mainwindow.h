@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "aboutdialog.h"
+#include "types.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,13 +29,19 @@ private slots:
   void on_actionHelp_triggered();
   void on_slowClickCheckBox_stateChanged(int arg1);
 
+  void on_listenBindButton_pressed(); // v2.0.3
+  void on_clickBindButton_pressed();  // v2.0.3
+  void on_mouseBindButton_pressed();  // v2.0.3
+
 private:
   Ui::MainWindow *ui;
   AboutDialog *m_aboutDialog = nullptr;
 
-  void refreshUiButtons();
-  void refreshUiInfo();
-}; // class MainWindow
+  /**
+   * v2.0.3: Sets the program into binding mode for an action.
+   */
+  void changeInput(QPushButton *btn, action_t whichAction);
+}; // class 1500MainWindow
 
 extern MainWindow *_mainWindow; // Use mainWindow()
 MainWindow *mainWindow();

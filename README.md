@@ -3,7 +3,7 @@
 # Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [SuperAutoClicker](#superautoclicker)
+- [SuperAutoClicker (English)](#superautoclicker-english)
   - [Screenshots](#screenshots)
   - [Supported Operating Systems](#supported-operating-systems)
   - [Recommendations](#recommendations)
@@ -11,27 +11,27 @@
   - [In a nutshell](#in-a-nutshell)
   - [Example](#example)
 - [Customizing Keys](#customizing-keys)
-  - [Example](#example-1)
 - [Download](#download)
 - [Building](#building)
   - [Windows](#windows)
-- [Planned Features](#planned-features)
 - [Troubleshooting](#troubleshooting)
   - [The autoclicker doesn't work on [GAME].](#the-autoclicker-doesnt-work-on-game)
 - [License](#license)
 
-# SuperAutoClicker
+# SuperAutoClicker (English)
 
-**SuperAutoClicker** is a free, open-source auto clicker that can be controlled on-the-fly by only the keyboard buttons. You can set the interval, toggle it on and off and switch between mouse buttons without ever leaving your game.
+What makes SuperAutoClicker so different from the other autoclickers out there? The answer to that question is: you can control the autoclicker from within your game. All you have to do is configure your keybindings, , and bam! You can set the interval, toggle the clicker on and off and switch between both mouse buttons, **all without alt-tabbing out of the game**. 
 
 ## Screenshots
+
+<sub>(slightly outdated)</sub>
 
 ![](./screenshots/ui_2.0.1_PRE.png)
 ![](./screenshots/about_2.0.1_PRE.png)
 
 ## Supported Operating Systems
 
-Only Windows is supported.
+Only Windows is supported as of now. Linux support is a work in progress.
 
 ## Recommendations
 
@@ -57,7 +57,7 @@ You can also change the interval on the go, while the auto clicker is clicking. 
 | `Listen Mode`             | State in which the program listens for your numeric inputs. Your numeric inputs will be stored as millisecond intervals for the autoclicker.     |
 | `Click Mode`              | State in which the program repeatedly clicks with either the left or right mouse button repeatedly, depending on your Toggle Mouse Button state. |
 | `Number Row or NUMPAD0-9` | Inputs milliseconds while in Listen Mode.                                                                                                        |
-| `Slow Click Mode`         | **(Advanced)** Certain games will only work with this option enabled.                                                                                |
+| `Slow Click Mode`         | **(Advanced)** Certain games will only work with this option enabled.                                                                            |
 
 ## Example
 
@@ -82,18 +82,7 @@ You can also change the interval on the go, while the auto clicker is clicking. 
 
 # Customizing Keys
 
-As SuperAutoClicker is a work in progress, there is currently no user-friendly way to change the keybindings. As it turns out, you can configure the keys by editing the .ini configuration file, located in your home directory. In Windows, this should be `"%USERPROFILE%\SuperAutoClicker Configuration.ini"`.
-
-The key binding strings have the following format: `KEYCODE,META,CTRL,ALT,SHIFT`, where `KEYCODE` is a **decimal** keycode, and `META`, `CTRL`, `ALT` and `SHIFT` are either 1 (for enabled) and 0 (for disabled). Change the first number in the comma-separated list of numbers to the keycode you want. The list of valid keycodes (in **hexadecimal**) can be found [here](KEYCODES.md).
-
-## Example
-
-`'C:\Users\John\SuperAutoClicker Configuration.ini'`
-
-    [General]
-    ListenModeKey="120,0,0,0,0"    ..... F9
-    ClickModeKey="121,0,1,0,1"     ..... CTRL SHIFT F10
-    MouseButtonKey="122,1,1,1,1"   ..... WIN CTRL ALT SHIFT F11
+To change your keybindings, simply click the button of the action you want to change. Then enter the key combination on your keyboard.
 
 # Download
 
@@ -119,15 +108,11 @@ The key binding strings have the following format: `KEYCODE,META,CTRL,ALT,SHIFT`
 - **Qt Creator**
     - Open `src/src.pro` and build the project.
 
-# Planned Features
-
-- User friendly way to edit keybindings
-
 # Troubleshooting
 
 ## The autoclicker doesn't work on [GAME].
 
-The version 2.0.2_PRE comes with `Slow Click Mode` which aims to fix this problem.
+The current version comes with `Slow Click Mode` which aims to fix this problem.
 Simply toggle it on and try again.
 
 # License

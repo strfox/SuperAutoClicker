@@ -102,3 +102,27 @@ void sac::MainWindow::on_slowClickCheckBox_stateChanged(int state) {
   putMsg(
       QString("Slow Click Mode: ").append(_ac->m_slowClickMode ? "ON" : "OFF"));
 }
+
+// v2.0.3
+void sac::MainWindow::changeInput(QPushButton *btn, action_t whichAction) {
+  refresh();
+  AutoClicker *_ac = autoClicker();
+  _ac->m_changeInputListenMode = true;
+  _ac->m_changeInputWhich = std::make_shared<action_t>(whichAction);
+  btn->setText(tr("Enter new key"));
+}
+
+// v2.0.3
+void sac::MainWindow::on_listenBindButton_pressed() {
+  changeInput(ui->listenBindButton, TOGGLE_LISTEN);
+}
+
+// v2.0.3
+void sac::MainWindow::on_clickBindButton_pressed() {
+  changeInput(ui->clickBindButton, TOGGLE_CLICK);
+}
+
+// v2.0.3
+void sac::MainWindow::on_mouseBindButton_pressed() {
+  changeInput(ui->mouseBindButton, TOGGLE_MOUSE);
+}

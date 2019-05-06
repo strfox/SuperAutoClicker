@@ -12,7 +12,7 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs depr
 
 
 DEFINES += PROGRAM_NAME=\\\"SuperAutoClicker\\\"
-DEFINES += PROGRAM_VERSION=\\\"2.0.2_PRE\\\"
+DEFINES += PROGRAM_VERSION=\\\"2.0.3_PRE\\\"
 DEFINES += PROGRAM_AUTHOR_FIRST_NAME=\\\"Michel\\\"
 DEFINES += PROGRAM_AUTHOR_LAST_NAME=\\\"Faria\\\"
 DEFINES += PROGRAM_REPO=\\\"https://github.com/michelfaria/SuperAutoClicker\\\"
